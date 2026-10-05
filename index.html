@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EVO II 鏡組掛載模擬</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* 版面：上方版本切換，中間整機 3D 檢視，右側規格欄；手機改上下排列 */
+:root {
+  --bg: #f2f4f7; --panel: #ffffff; --fg: #17202b; --muted: #5c6776; --line: #d8dde5;
+  --accent: #2d6bd3; --accent-soft: #e2ebfa; --warn: #b4540d; --warn-soft: #fbeee2; --ok: #1f7a4d;
+  --view-top: #dfe5ed; --view-bot: #f7f8fa;
+  --sans: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --bg: #11151b; --panel: #19202a; --fg: #e5e9ef; --muted: #98a3b2; --line: #2b3441;
+  --accent: #6aa1ff; --accent-soft: #1e2c44; --warn: #f0a25e; --warn-soft: #3a2a1c; --ok: #5fd19a;
+  --view-top: #1b222c; --view-bot: #0d1116; color-scheme: dark } }
+* { box-sizing: border-box }
+html, body { margin: 0 }
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.6;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px) }
+.wrap { max-width: 1320px; margin: 0 auto; padding-inline: 16px; padding-block: 18px 28px; display: grid; gap: 14px }
+header h1 { font-size: 1.45rem; margin: 0; text-wrap: balance }
+header p { margin: 2px 0 0; color: var(--muted) }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px }
+.tabs button { font: inherit; font-weight: 500; padding: 7px 15px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--fg); cursor: pointer }
+.tabs button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 350px; gap: 14px; align-items: start }
+@media (max-width: 900px) { .main { grid-template-columns: 1fr } }
+.viewer { position: relative; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 10;
+  max-width: 100%; background: linear-gradient(var(--view-top), var(--view-bot)) }
+@media (max-width: 600px) { .viewer { aspect-ratio: 1 / 1 } }
+.viewer canvas { display: block; width: 100%; height: 100% }
+.hint { position: absolute; left: 12px; bottom: 10px; font-size: .8rem; color: var(--muted); pointer-events: none }
+.views { position: absolute; right: 10px; top: 10px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end }
+.views button { font: inherit; font-size: .82rem; padding: 3px 10px; border-radius: 6px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--fg); cursor: pointer; opacity: .92 }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; padding: 10px 12px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 10px }
+.ctl label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer }
+.tilt { display: inline-flex; gap: 8px; align-items: center }
+.tilt output { font-family: var(--mono); min-width: 3.4em }
+aside { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 12px; min-width: 0 }
+aside h2 { font-size: 1.1rem; margin: 0 }
+aside .lead { margin: 0; color: var(--muted) }
+dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px }
+dt { color: var(--muted) }
+dd { margin: 0; font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right }
+.parts { margin: 4px 0 0; padding-left: 1.2em; display: grid; gap: 3px }
+.note { background: var(--warn-soft); border-radius: 8px; padding: 10px 12px; font-size: .9rem }
+.note b { color: var(--warn) }
+.clear { font-size: .9rem; display: grid; gap: 4px }
+.clear span { font-family: var(--mono) }
+.ok { color: var(--ok) } .bad { color: var(--warn) }
+.cmp { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px }
+table { border-collapse: collapse; width: 100%; min-width: 660px; font-size: .92rem }
+th, td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top }
+th { background: var(--accent-soft) }
+td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap }
+tr:last-child td { border-bottom: 0 }
+footer { color: var(--muted); font-size: .82rem }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>EVO II Pro V3 鏡組掛載模擬</h1>
+    <p>整機外形依 Autel 公開規格（展開 457 × 558 × 108 mm、軸距 397 mm）與實機照片建立，鏡組支架裝在機頂前段。拖曳旋轉、滾輪縮放、右鍵平移。</p>
+  </header>
+
+  <div class="tabs" role="group" aria-label="選擇支架">
+    <button id="tab-none" data-v="none" aria-pressed="false">原機（未掛載）</button>
+    <button id="tab-v2" data-v="v2" aria-pressed="false">V2 一體式</button>
+    <button id="tab-v3" data-v="v3" aria-pressed="true">V3 加高版</button>
+    <button id="tab-qr" data-v="qr" aria-pressed="false">鏡組快拆支架</button>
+  </div>
+
+  <div class="main">
+    <div style="display:grid;gap:10px;min-width:0">
+      <div class="viewer" id="viewer">
+        <div class="views">
+          <button type="button" data-cam="iso">立體</button>
+          <button type="button" data-cam="front">正面</button>
+          <button type="button" data-cam="side">側面</button>
+          <button type="button" data-cam="top">俯視</button>
+          <button type="button" data-cam="close">支架特寫</button>
+        </div>
+        <span class="hint">機身外形為依規格與照片建立的近似模型，非原廠 CAD</span>
+      </div>
+      <div class="ctl">
+        <label><input type="checkbox" id="optProps" checked> 螺旋槳</label>
+        <label><input type="checkbox" id="optSpin"> 螺旋槳轉動</label>
+        <label><input type="checkbox" id="optDisc"> 槳盤範圍</label>
+        <label><input type="checkbox" id="optCamFov"> 雲台相機視野</label>
+        <label><input type="checkbox" id="optUpFov" checked> 上視感測範圍</label>
+        <label><input type="checkbox" id="optOrbit"> 自動環繞</label>
+        <span class="tilt" id="tiltBox" hidden><label for="tilt">鏡組俯仰</label><input type="range" id="tilt" min="-30" max="30" step="1" value="0"><output id="tiltOut">0°</output></span>
+      </div>
+    </div>
+    <aside id="spec" aria-live="polite"></aside>
+  </div>
+
+  <div class="cmp">
+    <table>
+      <thead><tr><th>支架</th><th>支撐方式</th><th>鏡組離機殼</th><th>支架重量（實心估算）</th><th>優點</th><th>限制</th></tr></thead>
+      <tbody>
+        <tr><td>V2 一體式</td><td>黏貼底板＋短支柱＋套環</td><td class="num">6.2 mm</td><td class="num">9.2 g</td><td>最輕、重心最低</td><td>鏡組貼近機殼，角度固定</td></tr>
+        <tr><td>V3 加高版</td><td>黏貼底板＋A 字形支柱＋套環</td><td class="num">20.2 mm</td><td class="num">10.5 g</td><td>避開機殼弧面與貼紙</td><td>重心升高約 14 mm，角度固定</td></tr>
+        <tr><td>鏡組快拆支架</td><td>黏貼三爪底座＋二爪鏡頭環＋M5 螺絲</td><td class="num">18.7 mm</td><td class="num">11.2 g</td><td>可調俯仰 ±30°，鏡組可整組拆下</td><td>最重；M5 須用尼龍螺絲，重量裕度最緊</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <footer>研邦科技有限公司｜鏡組：V1（前段 Ø31、後段 Ø36、全長 35 mm、66.0 g）｜原廠最大起飛重量 1,270 g</footer>
+</div>
+
+<script src="models.js"></script>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+               "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { STLLoader } from "three/addons/loaders/STLLoader.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+
+// ---------------- 機身尺寸（mm，Z 朝上、X 朝機頭） ----------------
+const BODY = { L: 230, W: 92, H: 62, cx: -15, cz: 70 };
+const TOP_Z = BODY.cz + BODY.H / 2;                  // 機頂 101 mm
+const MOUNT_X = 35;                                   // 支架中心（機頂前段 QR 貼紙區）
+const MOTORS = [ { x: 125, y: 150, z: 100, front: true }, { x: 125, y: -150, z: 100, front: true },
+                 { x: -128, y: 152, z: 80 }, { x: -128, y: -152, z: 80 } ];
+const PROP_R = 120;                                    // 9.4 吋槳
+const TOP_SENS = [ { x: -48 }, { x: -88 } ];          // 上視雙目（機頂後段）
+
+const SPEC = {
+  none: { name: "原機（未掛載）", lead: "EVO II Pro V3 原機外形，供與掛載後比較。",
+    rows: [["起飛重量", "1,191 g"], ["最大起飛重量", "1,270 g"], ["可加裝重量", "79 g"], ["展開尺寸", "457 × 558 × 108 mm"], ["軸距", "397 mm"]],
+    parts: [], parts3d: [] },
+  v2: { name: "V2 一體式支架", lead: "底板黏在機頂，短支柱把鏡組撐高 6 mm，套環由後方插入鏡組，頂部 M3 螺絲鎖緊。",
+    rows: [["支架外形", "37.5 × 36.4 × 50.3 mm"], ["光軸距機殼", "26.2 mm"], ["鏡組離機殼", "6.2 mm"], ["支架重量（實心）", "9.2 g"], ["整機（實心估算）", "約 1,267.7 g"]],
+    parts: ["支架 1 件（一體成型）", "M3×12 尼龍螺絲＋螺帽", "3M VHB 或 Dual Lock", "安全繩"],
+    parts3d: ["v2_bracket"], lens: "lens_v2", lensFront: 28.5 + 7, lensR: 18, lensTop: 26.2 + 18.2 + 5 },
+  v3: { name: "V3 加高版支架", lead: "黏貼與套環方式同 V2，支柱改為 A 字形並加高到 20 mm，鏡組離機殼約 20 mm。",
+    rows: [["支架外形", "37.5 × 36.4 × 64.3 mm"], ["光軸距機殼", "40.2 mm"], ["鏡組離機殼", "20.2 mm"], ["支架重量（實心）", "10.5 g"], ["整機（實心估算）", "約 1,269.0 g"]],
+    parts: ["支架 1 件（一體成型）", "M3×12 尼龍螺絲＋螺帽", "3M VHB 或 Dual Lock", "安全繩"],
+    parts3d: ["v3_bracket"], lens: "lens_v3" },
+  qr: { name: "鏡組快拆支架", lead: "底座黏在機頂、上方為三爪；鏡頭環下方為二爪，以 M5 螺絲連接，可調鏡組俯仰，也可整組拆下。",
+    rows: [["光軸距機殼（0°）", "38.7 mm"], ["鏡組離機殼", "18.7 mm"], ["轉軸高度", "11.0 mm"], ["俯仰調整", "−30°～+30°"], ["底座＋鏡頭環（實心）", "4.6 g＋6.6 g"], ["整機（實心估算）", "約 1,270.4 g"]],
+    parts: ["快拆底座 1 件", "鏡頭環 1 件", "M5×20 尼龍螺絲＋螺帽（轉軸）", "M3×12 尼龍螺絲＋螺帽（鏡頭環）", "3M VHB 或 Dual Lock", "安全繩"],
+    parts3d: ["v4_base", "v4_ring"], lens: "lens_v4", hinge: 11.0 },
+};
+
+// ---------------- 場景 ----------------
+const box = document.getElementById("viewer");
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+box.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(32, 16 / 10, 5, 6000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a96a6, 1.5));
+const sun = new THREE.DirectionalLight(0xffffff, 1.8); sun.position.set(300, 600, 350); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -500, right: 500, top: 500, bottom: -500, near: 10, far: 2000 });
+scene.add(sun);
+const fillL = new THREE.DirectionalLight(0xffffff, 0.5); fillL.position.set(-400, 200, -300); scene.add(fillL);
+
+const world = new THREE.Group(); world.rotation.x = -Math.PI / 2; scene.add(world);   // Z 朝上 → Y 朝上
+const ground = new THREE.Mesh(new THREE.CircleGeometry(700, 64), new THREE.ShadowMaterial({ opacity: 0.18 }));
+ground.receiveShadow = true; world.add(ground);
+const grid = new THREE.PolarGridHelper(600, 12, 6, 64, 0x9aa6b5, 0xc3cbd6); grid.rotation.x = Math.PI / 2; grid.material.transparent = true; grid.material.opacity = 0.35; world.add(grid);
+
+const M = {
+  orange: new THREE.MeshStandardMaterial({ color: 0xf0661f, roughness: 0.55 }),
+  orangeDk: new THREE.MeshStandardMaterial({ color: 0xd9561a, roughness: 0.6 }),
+  black: new THREE.MeshStandardMaterial({ color: 0x1d1f23, roughness: 0.5 }),
+  carbon: new THREE.MeshStandardMaterial({ color: 0x2a2d33, roughness: 0.35, metalness: 0.2 }),
+  grey: new THREE.MeshStandardMaterial({ color: 0x8d939b, roughness: 0.35, metalness: 0.5 }),
+  glass: new THREE.MeshStandardMaterial({ color: 0x0c1a2c, roughness: 0.1, metalness: 0.6 }),
+  red: new THREE.MeshStandardMaterial({ color: 0xc8322b, roughness: 0.4, metalness: 0.4 }),
+  prop: new THREE.MeshStandardMaterial({ color: 0x2b2e33, roughness: 0.5, side: THREE.DoubleSide }),
+  bracket: new THREE.MeshStandardMaterial({ color: 0x3f7fe0, roughness: 0.45 }),
+  ring: new THREE.MeshStandardMaterial({ color: 0x3f7fe0, roughness: 0.45 }),
+  lens: new THREE.MeshStandardMaterial({ color: 0x1a1c20, roughness: 0.3, metalness: 0.3 }),
+  disc: new THREE.MeshBasicMaterial({ color: 0x2d6bd3, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false }),
+  fovCam: new THREE.MeshBasicMaterial({ color: 0x1f7a4d, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false }),
+  fovUp: new THREE.MeshBasicMaterial({ color: 0x8e44ad, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false }),
+};
+function mesh(geo, mat, x = 0, y = 0, z = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; return m; }
+function rod(a, b, r, mat) {      // 兩點之間的圓柱
+  const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), d = B.clone().sub(A);
+  const m = mesh(new THREE.CylinderGeometry(r, r, d.length(), 20), mat);
+  m.position.copy(A.clone().add(B).multiplyScalar(0.5));
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()); return m;
+}
+function zcyl(r, h, mat, x, y, z) { const m = mesh(new THREE.CylinderGeometry(r, r, h, 32), mat, x, y, z); m.rotation.x = Math.PI / 2; return m; }
+
+// ---------------- EVO II Pro V3 近似模型 ----------------
+const drone = new THREE.Group(); world.add(drone);
+const body = mesh(new RoundedBoxGeometry(BODY.L, BODY.W, BODY.H, 6, 24), M.orange, BODY.cx, 0, BODY.cz); drone.add(body);
+const nose = mesh(new RoundedBoxGeometry(46, 80, 46, 5, 20), M.orange, BODY.cx + BODY.L / 2 - 8, 0, BODY.cz - 6); drone.add(nose);
+const batt = mesh(new RoundedBoxGeometry(96, BODY.W + 1, 30, 4, 10), M.orangeDk, BODY.cx - 64, 0, BODY.cz - 18); drone.add(batt);
+// 前視、後視、側視、上視感測器
+const eye = (x, y, z, axis) => { const m = mesh(new THREE.CylinderGeometry(6.5, 6.5, 4, 24), M.glass, x, y, z);
+  if (axis === "x") m.rotation.z = Math.PI / 2; if (axis === "y") {} if (axis === "z") m.rotation.x = Math.PI / 2; drone.add(m);
+  const ring = mesh(new THREE.TorusGeometry(7.5, 1.4, 10, 28), M.black, x, y, z);
+  if (axis === "x") ring.rotation.y = Math.PI / 2; if (axis === "y") ring.rotation.x = Math.PI / 2; drone.add(ring); };
+const noseX = BODY.cx + BODY.L / 2 + 15;
+[22, -22].forEach(y => eye(noseX - 1, y, BODY.cz + 4, "x"));
+[22, -22].forEach(y => eye(BODY.cx - BODY.L / 2 - 1, y, BODY.cz + 8, "x"));
+[18, -24].forEach(x => { eye(x, BODY.W / 2 + 1, BODY.cz + 6, "y"); eye(x, -BODY.W / 2 - 1, BODY.cz + 6, "y"); });
+TOP_SENS.forEach(s => eye(s.x, 0, TOP_Z + 1, "z"));
+// 下視（機腹）
+[10, -30].forEach(x => eye(x, 0, BODY.cz - BODY.H / 2 - 1, "z"));
+// 機臂、馬達、腳架、螺旋槳
+const props = [];
+MOTORS.forEach(mt => {
+  const root = mt.front ? [BODY.cx + 70, Math.sign(mt.y) * 40, 88] : [BODY.cx - 80, Math.sign(mt.y) * 40, 62];
+  drone.add(rod(root, [mt.x, mt.y, mt.z - 8], 7, M.carbon));
+  drone.add(zcyl(15, 22, M.black, mt.x, mt.y, mt.z));
+  drone.add(zcyl(15.5, 4, M.red, mt.x, mt.y, mt.z + 6));
+  drone.add(rod([mt.x, mt.y, mt.z - 10], [mt.x + (mt.front ? 4 : -4), mt.y, 0], 5, M.black));
+  const hub = new THREE.Group(); hub.position.set(mt.x, mt.y, mt.z + 14); drone.add(hub);
+  hub.add(zcyl(6, 6, M.grey, 0, 0, 0));
+  for (const s of [0, Math.PI]) {
+    const sh = new THREE.Shape(); sh.moveTo(5, -6); sh.bezierCurveTo(40, -15, 95, -11, PROP_R, -2);
+    sh.bezierCurveTo(PROP_R, 3, 90, 9, 40, 9); sh.lineTo(5, 6); sh.lineTo(5, -6);
+    const b = mesh(new THREE.ShapeGeometry(sh), M.prop); b.rotation.z = s; hub.add(b);
+  }
+  hub.userData.dir = (mt.front ? 1 : -1) * Math.sign(mt.y);
+  props.push(hub);
+  const disc = mesh(new THREE.RingGeometry(14, PROP_R, 64), M.disc, mt.x, mt.y, mt.z + 14); disc.castShadow = false; disc.userData.disc = true; drone.add(disc);
+});
+// 雲台相機
+const gimbal = new THREE.Group(); gimbal.position.set(BODY.cx + BODY.L / 2 - 10, 0, BODY.cz - BODY.H / 2 - 4); drone.add(gimbal);
+gimbal.add(mesh(new THREE.BoxGeometry(18, 18, 10), M.grey, 0, 0, 0));
+gimbal.add(mesh(new RoundedBoxGeometry(14, 64, 12, 3, 4), M.grey, 4, 0, -12));
+const cam = mesh(new RoundedBoxGeometry(44, 48, 44, 4, 8), M.grey, 10, 0, -38); gimbal.add(cam);
+const lensC = zcyl(15, 10, M.glass, 36, 0, -38); lensC.rotation.set(0, Math.PI / 2, 0); gimbal.add(lensC);
+const camOrigin = new THREE.Vector3(gimbal.position.x + 41, 0, gimbal.position.z - 38);
+// 雲台相機視野（水平 82°、0° 俯仰）
+function frustum(len, hdeg, vdeg, mat) {
+  const h = len * Math.tan(hdeg * Math.PI / 360), v = len * Math.tan(vdeg * Math.PI / 360);
+  const g = new THREE.BufferGeometry();
+  const p = [0, 0, 0, len, h, v, len, -h, v, len, -h, -v, len, h, -v];
+  const idx = [0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1];
+  g.setAttribute("position", new THREE.Float32BufferAttribute(p, 3)); g.setIndex(idx); g.computeVertexNormals();
+  return new THREE.Mesh(g, mat);
+}
+const camFov = frustum(500, 82, 50, M.fovCam); camFov.position.copy(camOrigin); drone.add(camFov);
+// 上視感測範圍（水平 65°、垂直 50°，朝上）
+const upFov = new THREE.Group(); drone.add(upFov);
+TOP_SENS.forEach(s => { const f = frustum(220, 65, 50, M.fovUp); f.position.set(s.x, 0, TOP_Z + 2); f.rotation.y = -Math.PI / 2; upFov.add(f); });
+
+// ---------------- 支架與鏡組 ----------------
+const loader = new STLLoader(); const cache = {};
+function stl(name) {
+  if (!cache[name]) { const bin = Uint8Array.from(atob(window.MODELS[name]), c => c.charCodeAt(0)); const g = loader.parse(bin.buffer); g.computeVertexNormals(); cache[name] = g; }
+  return cache[name];
+}
+const mountGroup = new THREE.Group(); mountGroup.position.set(MOUNT_X, 0, TOP_Z); drone.add(mountGroup);
+let pivot = null, current = "v3";
+function build(v) {
+  current = v; const s = SPEC[v];
+  mountGroup.clear(); pivot = null;
+  document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === v)));
+  document.getElementById("tiltBox").hidden = !s.hinge;
+  if (s.parts3d.length) {
+    mountGroup.add(mesh(stl(s.parts3d[0]), M.bracket));
+    pivot = new THREE.Group(); mountGroup.add(pivot);
+    const lens = mesh(stl(s.lens), M.lens);
+    if (s.hinge) {
+      pivot.position.z = s.hinge;
+      const r = mesh(stl(s.parts3d[1]), M.ring); r.position.z = -s.hinge; lens.position.z = -s.hinge; pivot.add(r);
+    }
+    pivot.add(lens);
+  }
+  applyTilt(); renderSpec(s);
+}
+function applyTilt() {
+  const deg = Number(document.getElementById("tilt").value);
+  document.getElementById("tiltOut").textContent = (deg > 0 ? "+" : "") + deg + "°";
+  if (pivot && SPEC[current].hinge) pivot.rotation.y = -deg * Math.PI / 180;    // 正值＝向上仰
+  updateClearance();
+}
+// 鏡組與螺旋槳、上視感測、雲台視野的間距（以模型幾何計算）
+const _box = new THREE.Box3();
+function updateClearance() {
+  const el = document.getElementById("clear"); if (!el) return;
+  if (!SPEC[current].parts3d.length) { el.innerHTML = ""; return; }
+  drone.updateMatrixWorld(true);
+  _box.makeEmpty();
+  mountGroup.traverse(o => { if (o.isMesh) { o.geometry.computeBoundingBox(); const b = o.geometry.boundingBox.clone(); b.applyMatrix4(o.matrixWorld); _box.union(b); } });
+  // 轉回機身座標（world 群組旋轉 −90°）
+  const inv = new THREE.Matrix4().copy(world.matrixWorld).invert(); const b = _box.clone().applyMatrix4(inv);
+  let minProp = Infinity;
+  MOTORS.forEach(mt => {
+    const cx = Math.max(b.min.x, Math.min(mt.x, b.max.x)), cy = Math.max(b.min.y, Math.min(mt.y, b.max.y));
+    const horiz = Math.hypot(mt.x - cx, mt.y - cy) - PROP_R;
+    minProp = Math.min(minProp, horiz);
+  });
+  const topH = b.max.z - TOP_Z;
+  const upGap = Math.min(...TOP_SENS.map(sn => b.min.x - sn.x)) - Math.tan(25 * Math.PI / 180) * (b.max.z - TOP_Z);
+  const fmt = (v, good) => `<span class="${good ? "ok" : "bad"}">${v.toFixed(0)} mm</span>`;
+  el.innerHTML = `<b>間距檢查（依本模型）</b>
+    <div>與槳盤水平最近距離：${fmt(minProp, minProp > 15)}</div>
+    <div>距上視感測視野邊界：${fmt(upGap, upGap > 0)}</div>
+    <div>支架最高點距機頂：<span>${topH.toFixed(0)} mm</span></div>
+`;
+}
+function renderSpec(s) {
+  document.getElementById("spec").innerHTML = `<h2>${s.name}</h2><p class="lead">${s.lead}</p>
+    <dl>${s.rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
+    ${s.parts.length ? `<div><b>零件與材料</b><ol class="parts">${s.parts.map(p => `<li>${p}</li>`).join("")}</ol></div>` : ""}
+    <div class="clear" id="clear"></div>
+    <div class="note"><b>重量：</b>原廠最大起飛重量 1,270 g、機體 1,191 g，可加裝 79 g；鏡組 66.0 g。實際列印（填充 50%）通常比實心估算輕 10～15%，列印後務必整機秤重。</div>`;
+  updateClearance();
+}
+
+// ---------------- 視角 ----------------
+const VIEWS = { iso: [[520, 330, 520], [0, 90, 0]], front: [[0, 120, 900], [0, 90, 0]], side: [[900, 110, 0], [0, 90, 0]],
+  top: [[1, 950, 0], [0, 60, 0]], close: [[170, 200, 160], [MOUNT_X * 0 , 130, -MOUNT_X]] };
+// three.js 座標：x＝機頭（模型 X），y＝上（模型 Z），z＝模型 −Y；上面陣列為 three.js 座標
+function setView(k) { const [p, t] = VIEWS[k]; camera.position.set(...p); controls.target.set(...t); controls.update(); }
+document.querySelectorAll("[data-cam]").forEach(b => b.addEventListener("click", () => setView(b.dataset.cam)));
+// 正面看機頭：相機放在 +X
+VIEWS.front = [[900, 120, 0], [0, 90, 0]]; VIEWS.side = [[0, 110, -900], [0, 90, 0]]; VIEWS.close = [[MOUNT_X + 150, 210, -150], [MOUNT_X, 130, 0]];
+VIEWS.iso = [[560, 330, -460], [0, 90, 0]];
+
+// ---------------- 控制 ----------------
+function sync() {
+  props.forEach(p => p.visible = document.getElementById("optProps").checked);
+  drone.traverse(o => { if (o.userData.disc) o.visible = document.getElementById("optDisc").checked; });
+  camFov.visible = document.getElementById("optCamFov").checked;
+  upFov.visible = document.getElementById("optUpFov").checked;
+}
+["optProps", "optDisc", "optCamFov", "optUpFov"].forEach(id => document.getElementById(id).addEventListener("change", sync));
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => { document.getElementById("tilt").value = 0; build(b.dataset.v); }));
+document.getElementById("tilt").addEventListener("input", applyTilt);
+function resize() { const w = box.clientWidth, h = box.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(box);
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const clock = new THREE.Clock();
+function tick() {
+  const dt = clock.getDelta();
+  if (document.getElementById("optSpin").checked && !reduce) props.forEach(p => p.rotation.z += p.userData.dir * dt * 25);
+  controls.autoRotate = document.getElementById("optOrbit").checked && !reduce;
+  controls.update(); renderer.render(scene, camera); requestAnimationFrame(tick);
+}
+resize(); setView("iso"); sync(); build("v3"); tick();
+</script>
+</body>
+</html>
