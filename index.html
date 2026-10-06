@@ -20,6 +20,7 @@
   --accent: #6aa1ff; --accent-soft: #1e2c44; --warn: #f0a25e; --warn-soft: #3a2a1c; --ok: #5fd19a; --ok-soft: #173326;
   --view-top: #1b222c; --view-bot: #0d1116; color-scheme: dark } }
 * { box-sizing: border-box }
+[hidden] { display: none !important }
 html, body { margin: 0 }
 body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.6;
   padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px) }
@@ -93,8 +94,9 @@ footer { color: var(--muted); font-size: .82rem }
       <button id="tab-v3" data-v="v3" aria-pressed="false">V3 加高版</button>
       <button id="tab-qr" data-v="qr" aria-pressed="false">鏡組快拆支架</button>
       <button id="tab-nose" data-v="nose" aria-pressed="true">機頭前置夾持支架</button>
-      <button id="tab-b1" data-v="b1" data-evo-only aria-pressed="false">機腹 B1 標準型</button>
-      <button id="tab-b2" data-v="b2" data-evo-only aria-pressed="false">機腹 B2 下降型</button>
+      <button id="tab-adh" data-v="adh" aria-pressed="false">機頭前置黏貼支架</button>
+      <button id="tab-b1" data-v="b1" aria-pressed="false">機腹 B1 標準型</button>
+      <button id="tab-b2" data-v="b2" aria-pressed="false">機腹 B2 下降型</button>
     </div>
   </div>
 
@@ -131,10 +133,11 @@ footer { color: var(--muted); font-size: .82rem }
         <tr><td>起飛重量／最大起飛重量</td><td class="num">1,191 g／1,270 g</td><td class="num">1,400 g／2,050 g</td></tr>
         <tr><td>可加裝重量</td><td class="num">79 g</td><td class="num">650 g（官方酬載）</td></tr>
         <tr><td>鏡組 66 g＋前置支架後剩餘</td><td class="num" id="noseMarginEvo">依模型粗估</td><td class="num" id="noseMarginM3">依模型粗估</td></tr>
-        <tr><td>軸距／展開尺寸</td><td class="num">397 mm／457 × 558 × 108 mm</td><td class="num">395 mm／468 × 548 × 216 mm</td></tr>
+        <tr><td>機體展開尺寸（使用者提供）</td><td class="num">260 × 355 × 108 mm</td><td class="num">468 × 548 × 216 mm</td></tr>
+        <tr><td>軸距／含槳葉最大範圍</td><td class="num">397 mm／457 × 558 × 108 mm</td><td class="num">395 mm／468 × 548 × 216 mm（展開規格）</td></tr>
         <tr><td>螺旋槳直徑</td><td class="num">約 239 mm</td><td class="num">221 mm</td></tr>
         <tr><td>機頂需避開</td><td>上視雙目感測器（機頂後段）</td><td>RTK 天線、兩支鞭狀天線（機頂中段）</td></tr>
-        <tr><td>可比較支架</td><td>機頂、機頭前置、機腹（須確認重量與遮蔽）</td><td>機頂、機頭前置（須實測機頭尺寸與雷達遮蔽）</td></tr>
+        <tr><td>可比較支架</td><td>機頂、機頭前置夾持／黏貼、機腹 B1／B2</td><td>機頂、機頭前置夾持／黏貼、機腹 B1／B2（各機型獨立尺寸）</td></tr>
       </tbody>
     </table>
   </div>
@@ -153,6 +156,7 @@ footer { color: var(--muted); font-size: .82rem }
 </div>
 
 <script src="models.js"></script>
+<script src="mounts-v6.js"></script>
 <script type="importmap">
 { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
@@ -177,14 +181,17 @@ const MOUNTS = {
     parts: ["快拆底座 1 件", "鏡頭環 1 件", "M5×20 尼龍螺絲＋螺帽（轉軸）", "M3×12 尼龍螺絲＋螺帽（鏡頭環）", "3M VHB 或 Dual Lock", "安全繩"],
     stl: ["v4_base", "v4_ring"], lens: "lens_v4", hinge: 11.0 },
   nose: { name: "機頭前置夾持支架", place: "nose", g: 0,
-    lead: "U 形夾扣住機頭斷面，上方與兩側下緣的前伸連桿連接套環，鏡組整段位於機頭正前方、光軸與機身同向。EVO II 與 ALIGN M3 RTK 分別依機身模型配置夾持尺寸。",
+    lead: "U 形座包覆固定機頭外殼，左右 M3 螺絲經止滑壓墊側向壓緊；下緣中央開放，避開雲台。前伸連桿支撐正前方套環；螺絲僅鎖支架，不鑽機殼。",
     rows: [],
-    parts: ["前置夾持支架（依各機型尺寸製作）", "M3×12 尼龍螺絲＋螺帽", "0.5 mm 止滑泡棉墊（夾片內側）", "安全繩"], stl: [], lens: "lens_nose" },
-  b1: { name: "機腹 B1 標準型", evo: true, place: "belly", g: 7.9 + 4 * 2.8 + 1.5, legs: { stl: "leg_e1", E: 25, g: 2.8 },
+    parts: ["各機型專用夾持座（待實測試裝）", "M3 側壓螺絲與外側螺帽各 2 組＋軟質壓墊", "M3 套環螺絲與螺帽 1 組", "獨立安全繩（不綁雲台或天線）"], stl: [], lens: "lens_nose" },
+  adh: { name: "機頭前置黏貼支架", place: "nose", g: 0,
+    lead: "左右雙腳座黏於機頭上蓋前段，前伸連桿將鏡組帶到機頭正前方。接觸面以泡棉膠帶補償小曲率；依殼材選擇 VHB 或 Dual Lock，並以獨立安全繩備援。",
+    rows: [], parts: ["雙腳黏貼座（接觸曲面待量測）", "依殼材選型的膠帶／可拆扣件", "M3 套環螺絲與螺帽", "獨立安全繩"], stl: [] },
+  b1: { name: "機腹 B1 標準型", place: "belly", g: 7.9 + 4 * 2.8 + 1.5, legs: { stl: "leg_e1", E: 25, g: 2.8 },
     lead: "底板黏在機腹雲台後方，鏡組倒掛在下方。鏡組最低點原本離地只有約 6 mm，需加 25 mm 腳架延長件，鏡組離地約 31 mm。",
     rows: [["鏡組最低點（未加高）", "約 5.6 mm"], ["腳架延長", "25 mm × 4 支"], ["鏡組最低點（加高後）", "約 30.6 mm"], ["支架＋腳架（實心）", "7.9 g＋11.2 g"]],
     parts: ["機腹支架 1 件", "腳架延長件 25 mm × 4 支", "M3×12 尼龍螺絲＋螺帽", "3M VHB 或 Dual Lock", "束帶 4 條（固定延長件）", "安全繩"], stl: ["belly_b1"], lens: "lens_b1" },
-  b2: { name: "機腹 B2 下降型", evo: true, place: "belly", g: 11.0 + 4 * 4.4 + 1.5, legs: { stl: "leg_e2", E: 55, g: 4.4 },
+  b2: { name: "機腹 B2 下降型", place: "belly", g: 11.0 + 4 * 4.4 + 1.5, legs: { stl: "leg_e2", E: 55, g: 4.4 },
     lead: "A 字形支柱把鏡組降到雲台最低點以下 3 mm，鏡組往前看不會被雲台擋住。需加 55 mm 腳架延長件，鏡組離地約 32 mm。",
     rows: [["支柱高度", "30.8 mm"], ["鏡組最低點（未加高）", "約 −23 mm（低於地面）"], ["腳架延長", "55 mm × 4 支"], ["鏡組最低點（加高後）", "約 31.8 mm"], ["支架＋腳架（實心）", "11.0 g＋17.6 g"]],
     parts: ["機腹支架 1 件", "腳架延長件 55 mm × 4 支", "M3×12 尼龍螺絲＋螺帽", "3M VHB 或 Dual Lock", "束帶 4 條（固定延長件）", "安全繩"], stl: ["belly_b2"], lens: "lens_b2" },
@@ -253,20 +260,36 @@ function propeller(R, mat) {
   }
   return hub;
 }
+// 照片參考的漸縮機殼；局部斷面仍為待量測假設。
+function shell(sections, mat) {
+  const vertices=[], indices=[], N=32;
+  sections.forEach(([x,w,h,z]) => {
+    const r=Math.min(24,w/2,h/2);
+    for(let i=0;i<N;i++) {
+      const a=2*Math.PI*i/N, cy=Math.cos(a), sz=Math.sin(a);
+      vertices.push(x,Math.sign(cy)*(w/2-r)+r*cy,z+Math.sign(sz)*(h/2-r)+r*sz);
+    }
+  });
+  for(let k=0;k<sections.length-1;k++) for(let i=0;i<N;i++) {
+    const a=k*N+i,b=k*N+(i+1)%N,c=b+N,d=a+N; indices.push(a,b,c,a,c,d);
+  }
+  for(let i=1;i<N-1;i++) { indices.push(0,i+1,i); const a=(sections.length-1)*N; indices.push(a,a+i,a+i+1); }
+  const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3)); geo.setIndex(indices);geo.computeVertexNormals(); return mesh(geo,mat);
+}
 
 // ---------------- 機型一：Autel EVO II Pro V3 ----------------
 function buildEVO() {
   // 依官方總高 108 mm 校正：機頂 108、機腹 46、雲台最低點 16 mm（離地）
   const g = new THREE.Group(); const B = { L: 230, W: 92, H: 62, cx: -15, cz: 77 }; const TOP = B.cz + B.H / 2, BELLY = B.cz - B.H / 2;
-  g.add(mesh(new RoundedBoxGeometry(B.L, B.W, B.H, 6, 24), M.orange, B.cx, 0, B.cz));
+  g.add(shell([[-130,84,56,74],[-80,92,62,77],[40,92,62,77],[66,92,62,77],[100,80,38,87]],M.orange));
   g.add(mesh(new RoundedBoxGeometry(96, B.W + 1, 30, 4, 10), M.orangeDk, B.cx - 64, 0, B.cz - 18));
-  const front = B.cx + B.L / 2, frontSens = [16, -16].map(y => ({ x: front + 1, y, z: B.cz + 4 }));
+  const front = B.cx + B.L / 2, frontSens = [36.8, -36.8].map(y => ({ x: front + 1, y, z: B.cz + 6 }));
   frontSens.forEach(s => eye(g, s.x, s.y, s.z, "x"));
   [22, -22].forEach(y => eye(g, B.cx - B.L / 2 - 1, y, B.cz + 8, "x"));
   [18, -24].forEach(x => { eye(g, x, B.W / 2 + 1, B.cz + 6, "y"); eye(g, x, -B.W / 2 - 1, B.cz + 6, "y"); });
   const topSens = [-48, -88]; topSens.forEach(x => eye(g, x, 0, TOP + 1, "z"));
   const downSens = [10, -30]; downSens.forEach(x => eye(g, x, 0, BELLY - 1, "z"));
-  const motors = [{ x: 125, y: 150, z: 104, f: 1 }, { x: 125, y: -150, z: 104, f: 1 }, { x: -128, y: 152, z: 86, f: 0 }, { x: -128, y: -152, z: 86, f: 0 }];
+  const motors = [{ x: 114, y: 162.5, z: 94, f: 1 }, { x: 114, y: -162.5, z: 94, f: 1 }, { x: -114, y: 162.5, z: 86, f: 0 }, { x: -114, y: -162.5, z: 86, f: 0 }];
   const R = 120, props = [], discs = [], legTips = [];
   motors.forEach(mt => {
     const root = mt.f ? [B.cx + 60, Math.sign(mt.y) * 40, 92] : [B.cx - 80, Math.sign(mt.y) * 40, 66];
@@ -298,7 +321,7 @@ function buildEVO() {
 // ---------------- 機型二：ALIGN 亞拓 M3 RTK ----------------
 function buildM3() {
   const g = new THREE.Group(); const B = { L: 250, W: 96, H: 66, cx: 0, cz: 152 }; const TOP = B.cz + B.H / 2;
-  g.add(mesh(new RoundedBoxGeometry(B.L, B.W, B.H, 6, 26), M.white, B.cx, 0, B.cz));
+  g.add(shell([[-125,76,60,150],[-70,96,66,152],[70,96,66,152],[91,96,66,152],[125,82,46,148]],M.white));
   g.add(mesh(new RoundedBoxGeometry(70, B.W - 6, 34, 4, 14), M.whiteDk, B.cx + B.L / 2 - 30, 0, B.cz - 30));   // 機頭下緣
   g.add(mesh(new RoundedBoxGeometry(8, 34, 22, 2, 3), M.black, B.cx + B.L / 2 + 1, 0, B.cz + 2));            // 前避障雷達
   g.add(mesh(new RoundedBoxGeometry(96, B.W + 1, 26, 4, 10), M.whiteDk, B.cx - 70, 0, B.cz - 22));           // 電池艙
@@ -311,7 +334,7 @@ function buildM3() {
   ants.forEach(([x, y]) => { g.add(zcyl(5, 10, M.black, x, y, TOP + 5)); g.add(rod([x, y, TOP + 8], [x - 4, y * 1.15, TOP + 100], 4.2, M.black)); });
   // 碳纖管機臂（含折疊關節）、馬達、長腳架
   const motors = [{ x: 120, y: 158, z: 192, f: 1 }, { x: 120, y: -158, z: 192, f: 1 }, { x: -120, y: 158, z: 192, f: 0 }, { x: -120, y: -158, z: 192, f: 0 }];
-  const R = 110.5, props = [], discs = [];
+  const R = 110.5, props = [], discs = [], legTips = motors.map(mt=>({x:mt.x,y:mt.y}));
   motors.forEach(mt => {
     const root = [B.cx + (mt.f ? 70 : -70), Math.sign(mt.y) * 46, B.cz + 14];
     const joint = [root[0] + (mt.x - root[0]) * 0.18, root[1] + (mt.y - root[1]) * 0.18, root[2] + 2];
@@ -335,18 +358,20 @@ function buildM3() {
   const radar = { x: B.cx + B.L / 2 + 5, y: 0, z: B.cz + 2 };
   const sens = new THREE.Group();
   const radarFov = frustum(220, 60, 80, M.fovSens); radarFov.position.set(radar.x, radar.y, radar.z); sens.add(radarFov); g.add(sens);
-  return { group: g, props, discs, camFov, up, sens, top: TOP, mountX: 78, motors, R, rtk,
+  const downSens=[-30,30], BELLY=119;
+  downSens.forEach(x=>{const f=frustum(160,100,80,M.fovSens);f.position.set(x,0,BELLY-2);f.rotation.y=Math.PI/2;sens.add(f);});
+  return { group: g, props, discs, camFov, up, sens, top: TOP, belly:BELLY, bellyX:35, downSens, legTips, gimbalBox:{x0:65,x1:131,y:30,z0:49,z1:109}, mountX: 78, motors, R, rtk,
     nose: { width: B.W, height: B.H, radius: 26, front: B.cx + B.L / 2 + 5, clampX: 91, axisZ: B.cz + 8 },
     frontSens: [radar], radar: true,
     title: "ALIGN 亞拓 M3 RTK 鏡組掛載模擬", upLabel: "RTK 天空視野（仰角 15° 以上）", base: 1400, mtow: 2050,
-    sub: "整機外形依亞拓公開規格（展開 468 × 548 × 216 mm、軸距 395 mm、槳徑 221 mm）與實機照片建立。可比較機頂與機頭正前方掛載；前避障雷達視錐僅為示意。",
+    sub: "整機外形依亞拓公開規格（展開 468 × 548 × 216 mm、軸距 395 mm、槳徑 221 mm）與實機照片建立。可比較機頭前置與機腹 B1／B2；雷達、下視範圍及天線高度僅為示意。",
     views: { iso: [[600, 420, -520], [0, 140, 0]], front: [[950, 170, 0], [0, 140, 0]], side: [[0, 170, -950], [0, 140, 0]], top: [[1, 1000, 0], [0, 100, 0]], close: [[230, 300, -170], [78, 210, 0]] } };
 }
 
 // ---------------- 支架 ----------------
 const loader = new STLLoader(); const cache = {};
 function stl(name) {
-  if (!cache[name]) { const bin = Uint8Array.from(atob(window.MODELS[name]), c => c.charCodeAt(0)); const g = loader.parse(bin.buffer); g.computeVertexNormals(); cache[name] = g; }
+  if (!cache[name]) { const raw = window.MOUNT_V6.models[name] || window.MODELS[name]; if (!raw) throw new Error(`缺少模型：${name}`); const bin = Uint8Array.from(atob(raw), c => c.charCodeAt(0)); const g = loader.parse(bin.buffer); g.computeVertexNormals(); cache[name] = g; }
   return cache[name];
 }
 const CRAFTS = { evo: buildEVO(), m3: buildM3() };
@@ -356,81 +381,27 @@ Object.values(CRAFTS).forEach(c => {
 });
 let craftKey = "evo", mountKey = "v3", pivot = null;
 const C = () => CRAFTS[craftKey];
-const raiseE = () => (MOUNTS[mountKey].legs ? MOUNTS[mountKey].legs.E : 0);
+const raiseE = () => (mountData().legs ? mountData().legs.E : 0);
 
-// 前置方案使用各機型的夾持斷面；既有機頂版 STL 不直接旋轉或拉伸套用。
-function openClipShape(w, h, r, fit, t) {
-  const arc = (pts, cy, cz, rad, a0, a1) => {
-    for (let i = 0; i <= 12; i++) { const a = (a0 + (a1 - a0) * i / 12) * Math.PI / 180; pts.push([cy + rad * Math.cos(a), cz + rad * Math.sin(a)]); }
-  };
-  const gap = w / 2 - r - 4;
-  const outline = (hw, low, high, rad) => {
-    const p = [[gap, low]];
-    arc(p, hw - rad, low + rad, rad, -90, 0);
-    arc(p, hw - rad, high - rad, rad, 0, 90);
-    arc(p, -hw + rad, high - rad, rad, 90, 180);
-    arc(p, -hw + rad, low + rad, rad, 180, 270);
-    p.push([-gap, low]); return p;
-  };
-  const outer = outline(w / 2 + fit + t, -h - fit - t, fit + t, r + fit + t);
-  const inner = outline(w / 2 + fit, -h - fit, fit, r + fit).reverse();
-  const sh = new THREE.Shape(); [...outer, ...inner].forEach(([y, z], i) => i ? sh.lineTo(y, z) : sh.moveTo(y, z)); sh.closePath(); return sh;
-}
-function extrudeAlongX(shape, length) {
-  const geo = new THREE.ExtrudeGeometry(shape, { depth: length, bevelEnabled: false, curveSegments: 32 });
-  // shape 的 (y,z) 座標 → 機身 (x,y,z)，行列式為 +1。
-  geo.applyMatrix4(new THREE.Matrix4().set(0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1));
-  geo.translate(-length / 2, 0, 0); return geo;
-}
-function solidVolume(geo) {
-  const p = geo.attributes.position, ix = geo.index; let sum = 0;
-  const a = new THREE.Vector3(), b = new THREE.Vector3(), d = new THREE.Vector3();
-  for (let i = 0; i < (ix ? ix.count : p.count); i += 3) {
-    a.fromBufferAttribute(p, ix ? ix.getX(i) : i); b.fromBufferAttribute(p, ix ? ix.getX(i + 1) : i + 1); d.fromBufferAttribute(p, ix ? ix.getX(i + 2) : i + 2);
-    sum += a.dot(b.cross(d)) / 6;
-  }
-  return Math.abs(sum);
-}
-function buildFrontNose(c) {
-  const n = c.nose, fit = 0.4, t = 2.2, strapW = 8, ringL = 14, ri = 15.8, ro = 18.2;
-  // 鏡組後緣距機頭（含雷達外殼）3 mm，整支鏡組位於機身前方。
-  const lensX = n.front + 21.5 + 3 - n.clampX, axisZ = n.axisZ - c.top;
-  const bracket = new THREE.Group(); c.mountGroup.add(bracket);
-  const add = (geo, x = 0, y = 0, z = 0) => { const m = mesh(geo, M.bracket, x, y, z); bracket.add(m); return m; };
-  add(extrudeAlongX(openClipShape(n.width, n.height, n.radius, fit, t), strapW));
-  // 開口套環及鎖緊耳，保留頂部 1.6 mm 夾縫。
-  const ring = new THREE.Shape(), a = Math.asin(0.8 / ri);
-  ring.absarc(0, 0, ro, Math.PI / 2 + a, Math.PI * 2.5 - a, false);
-  ring.lineTo(ri * Math.sin(a), ri * Math.cos(a));
-  ring.absarc(0, 0, ri, Math.PI * 2.5 - a, Math.PI / 2 + a, true); ring.closePath();
-  add(extrudeAlongX(ring, ringL), lensX, 0, axisZ);
-  [-1, 1].forEach(s => add(new THREE.BoxGeometry(ringL, 3, 6), lensX, s * 2.3, axisZ + ro + 1));
-  const beam = (from, to) => {
-    const A = new THREE.Vector3(...from), B = new THREE.Vector3(...to), delta = B.clone().sub(A);
-    const m = add(new THREE.BoxGeometry(8, t, delta.length())); m.position.copy(A.clone().add(B).multiplyScalar(0.5));
-    m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), delta.normalize());
-  };
-  beam([0, 0, fit + t / 2], [lensX - ringL / 2 + 1, 0, axisZ + ro - 1]);
-  const cornerR = n.radius + fit + t / 2;
-  const lowerY = n.width / 2 - n.radius + cornerR / Math.sqrt(2);
-  const lowerZ = -n.height + n.radius - cornerR / Math.sqrt(2);
-  [-1, 1].forEach(s => beam([0, s * lowerY, lowerZ], [lensX - ringL / 2 + 1, s * 12, axisZ - 12]));
-  const lens = mesh(stl("lens_nose"), M.lens, lensX, 0, axisZ - 21.8);
-  lens.rotation.z = Math.PI; lens.userData.isLens = true; c.mountGroup.add(lens);
-  const screw = rod([lensX, -6, axisZ + ro + 1], [lensX, 6, axisZ + ro + 1], 1.5, M.black, 12); c.mountGroup.add(screw);
-  // 各構件體積相加（接合重疊未扣除），作 PETG 實心粗估；非列印成品重量。
-  let volume = 0; bracket.traverse(o => { if (o.isMesh) volume += solidVolume(o.geometry); });
-  c.noseMass = volume / 1000 * 1.27;
-  c.noseBracket = bracket;
-}
+// STEP、列印 STL 與網頁 STL 均由同一份 params.json 產生。
 function mountData() {
-  const s = MOUNTS[mountKey], c = C(); if (mountKey !== "nose") return s;
-  return { ...s, g: c.noseMass + 1.5, rows: [
-    ["夾持斷面（模型寬×高）", `${c.nose.width} × ${c.nose.height} mm（需實測）`],
-    ["夾片寬度／厚度", "8 mm／2.2 mm"], ["鏡組後緣距機頭", "3 mm（模擬設定）"],
-    ["光軸位置", `機頂下方 ${(c.top - c.nose.axisZ).toFixed(0)} mm`],
-    ["支架重量（PETG 實心粗估）", `${c.noseMass.toFixed(1)} g`], ["螺絲等配件（估算）", "1.5 g"]
-  ] };
+  const s = MOUNTS[mountKey], c = C(), cfg = window.MOUNT_V6.config[craftKey]?.[mountKey];
+  if (!cfg) return s;
+  const rows = [["版本／狀態", "V6 待量測試裝版"], ["支架（PETG 實心體積估算）", `${cfg.bracket_g.toFixed(1)} g`], ["配件（估算）", `${cfg.hardware_g.toFixed(1)} g`]];
+  let lead = s.lead, parts = [...s.parts];
+  if (s.place === "nose") {
+    rows.unshift(["夾持處模型寬×高", `${c.nose.width} × ${c.nose.height} mm（非實測）`], ["鏡組後緣距機頭", `${cfg.front_gap} mm（設定）`], ["光軸位置", `機頂下方 ${(c.top-cfg.lens_axis_z).toFixed(1)} mm`]);
+    if(cfg.lens_offset_y) { rows.push(["鏡組左右偏移",`向左 ${cfg.lens_offset_y} mm（設計設定）`]);lead += " ALIGN 鏡組偏置機頭前左方，以避開中央雷達的假設視錐；增加側向力矩，需實測平衡與槳葉間隙。"; }
+    if (mountKey === "adh") rows.push(["兩脚座名義貼合面積", `${cfg.pad_area_mm2} mm²（平面投影，非有效黏著面積）`]);
+  } else {
+    rows.unshift(["支柱高度", `${cfg.stem_height.toFixed(1)} mm`], ["腳架延長", cfg.extension ? `${cfg.extension} mm × 4 支（需實測腳管）` : "本模型不需加高"], ["鏡組最低點離地", `${cfg.lens_ground.toFixed(1)} mm（含加高）`], ["支架最低點離地", `${cfg.bracket_ground.toFixed(1)} mm（含加高）`]);
+    if (mountKey === "b2") rows.push(["套環最高點距雲台最低點", `${cfg.gimbal_gap.toFixed(1)} mm（靜態模型）`]);
+    lead = mountKey === "b1" ? "ALIGN 專用短柱黏貼座，鏡組倒掛於雲台後方。既有長腳架讓本模型離地足夠，但正前方視線可能被雲台擋住。" : `ALIGN 專用中空 A 字形下降座，套環頂端降到假設雲台最低點下方 ${cfg.gimbal_gap.toFixed(1)} mm。依模型加 ${cfg.extension} mm 腳架延長件；仍需核對雲台轉動掃掠範圍與下視定位。`;
+    parts = ["ALIGN 專用機腹黏貼座（待量測）", "M3 套環螺絲與螺帽", "依機殼材質選型的膠帶", "獨立安全繩"];
+    if (cfg.extension) { rows.push(["腳架 4 支（PETG 實心）", `${(4*cfg.leg_g).toFixed(1)} g`]); parts.push(`${cfg.extension} mm 腳架延長件 4 支＋固定束帶`); }
+  }
+  return { ...s, v6: cfg, g: cfg.mount_g, rows, lead, parts, stl:[cfg.stl], lens:cfg.lens,
+    legs:cfg.extension ? {stl:cfg.leg_stl,E:cfg.extension,g:cfg.leg_g} : null };
 }
 function clearMount(c) {
   const shared = new Set(Object.values(cache));
@@ -438,7 +409,7 @@ function clearMount(c) {
   c.mountGroup.clear();
 }
 function buildMount() {
-  const c = C(), s = MOUNTS[mountKey], place = s.place || "top";
+  const c = C(), s = mountData(), place = s.place || "top";
   clearMount(c); c.legGroup.clear(); pivot = null;
   c.mountGroup.rotation.set(0, 0, 0);
   if (place === "top") c.mountGroup.position.set(c.mountX, 0, c.top);
@@ -447,8 +418,10 @@ function buildMount() {
   const E = raiseE(); c.group.position.z = E;
   if (s.legs) c.legTips.forEach(t => c.legGroup.add(mesh(stl(s.legs.stl), M.bracket, t.x, t.y, -E)));
   document.getElementById("tiltBox").hidden = !s.hinge;
-  if (place === "nose") {
-    buildFrontNose(c);
+  if (s.v6) {
+    c.mountGroup.position.set(...s.v6.position); c.mountGroup.rotation.x = s.v6.rotation_x;
+    c.mountGroup.add(mesh(stl(s.stl[0]), M.bracket));
+    const lens = mesh(stl(s.lens), M.lens); lens.userData.isLens = true; c.mountGroup.add(lens);
   } else if (s.stl) {
     c.mountGroup.add(mesh(stl(s.stl[0]), M.bracket));
     pivot = new THREE.Group(); c.mountGroup.add(pivot);
@@ -460,17 +433,17 @@ function buildMount() {
 }
 function select(craft, mount, keepView) {
   if (craft) craftKey = craft; if (mount) mountKey = mount;
-  if (craftKey !== "evo" && MOUNTS[mountKey].evo) mountKey = "v3";
+  
   Object.entries(CRAFTS).forEach(([k, c]) => { c.group.visible = k === craftKey; if (k !== craftKey) { clearMount(c); c.legGroup.clear(); c.group.position.z = 0; } });
   document.querySelectorAll("[data-craft]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.craft === craftKey)));
   document.querySelectorAll("[data-v]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === mountKey)));
   document.querySelectorAll("[data-evo-only]").forEach(b => b.hidden = craftKey !== "evo");
   document.getElementById("sensBox").hidden = !C().sens;
-  document.querySelector("#sensBox").lastChild.textContent = craftKey === "m3" ? " 前避障雷達範圍（示意）" : " 前視／下視感測範圍";
+  document.querySelector("#sensBox").lastChild.textContent = craftKey === "m3" ? " 前避障／下視範圍（示意）" : " 前視／下視感測範圍";
   document.getElementById("h1").textContent = C().title; document.getElementById("sub").textContent = C().sub + " 拖曳旋轉、滾輪縮放、右鍵平移。";
   document.getElementById("upLabel").textContent = C().upLabel;
   buildMount(); sync(); if (!keepView) setView("iso");
-  try { history.replaceState(null, "", craftKey === "m3" ? "#m3" : "#evo"); } catch (e) {}
+  try { const u=new URL(location.href);u.searchParams.set('mount',mountKey);u.hash=craftKey;history.replaceState(null,"",u); } catch (e) {}
 }
 function applyTilt() {
   const deg = Number(document.getElementById("tilt").value);
@@ -483,19 +456,21 @@ function applyTilt() {
 const _b = new THREE.Box3();
 function mountBox(lensOnly) {      // 以機身座標（未抬高）表示支架＋鏡組外框
   const c = C(); c.group.updateMatrixWorld(true); _b.makeEmpty();
-  c.mountGroup.traverse(o => { if (o.isMesh && (!lensOnly || o.userData.isLens)) { o.geometry.computeBoundingBox(); const b = o.geometry.boundingBox.clone(); b.applyMatrix4(o.matrixWorld); _b.union(b); } });
-  return _b.clone().applyMatrix4(new THREE.Matrix4().copy(c.group.matrixWorld).invert());
+  c.mountGroup.traverse(o => { if (o.isMesh && (!lensOnly || o.userData.isLens)) { o.geometry.computeBoundingBox(); const b = o.geometry.boundingBox.clone(); b.applyMatrix4(new THREE.Matrix4().copy(c.group.matrixWorld).invert().multiply(o.matrixWorld)); _b.union(b); } });
+  return _b.clone();
 }
 function corners(b) { const r = []; for (const x of [b.min.x, b.max.x]) for (const y of [b.min.y, b.max.y]) for (const z of [b.min.z, b.max.z]) r.push({ x, y, z }); return r; }
 // 三角形逐一裁切視錐，避免僅檢查外框八角而漏掉穿越視錐的鏡筒／連桿。
-function intersectsFrontView(c) {
+function intersectsFrontView(c, down=false) {
   c.group.updateMatrixWorld(true); const inv = c.group.matrixWorld.clone().invert(); let hit = false;
   c.mountGroup.traverse(o => {
     if (!o.isMesh || hit) return;
     const p = o.geometry.attributes.position, ix = o.geometry.index, matrix = inv.clone().multiply(o.matrixWorld);
     const th = Math.tan(Math.PI / 6), tv = Math.tan(40 * Math.PI / 180);
-    for (const f of c.frontSens) {
-      const planes = [v => v.x - f.x - 0.01,
+    for (const f of down ? c.downSens.map(x=>({x,y:0,z:c.belly})) : c.frontSens) {
+      const planes = down ? [v=>f.z-v.z-0.01,
+        v=>(f.z-v.z)*tv-(v.x-f.x),v=>(f.z-v.z)*tv+(v.x-f.x),
+        v=>(f.z-v.z)*Math.tan(50*Math.PI/180)-(v.y-f.y),v=>(f.z-v.z)*Math.tan(50*Math.PI/180)+(v.y-f.y)] : [v => v.x - f.x - 0.01,
         v => (v.x - f.x) * th - (v.y - f.y), v => (v.x - f.x) * th + (v.y - f.y),
         v => (v.x - f.x) * tv - (v.z - f.z), v => (v.x - f.x) * tv + (v.z - f.z)];
       for (let i = 0; i < (ix ? ix.count : p.count) && !hit; i += 3) {
@@ -517,13 +492,13 @@ function intersectsFrontView(c) {
   return hit;
 }
 function clearance() {
-  const c = C(), s = MOUNTS[mountKey]; if (!s.stl) return "";
+  const c = C(), s = mountData(); if (!s.stl) return "";
   const place = s.place || "top", b = mountBox(), Lb = mountBox(true), E = raiseE(); let minProp = Infinity;
-  // 以鏡組外框計算與槳盤的水平距離（夾片與支柱位於槳盤平面下方）
+  // 鏡組的平面投影粗查；不代表支架完整碰撞檢核。
   c.motors.forEach(mt => { const cx = Math.max(Lb.min.x, Math.min(mt.x, Lb.max.x)), cy = Math.max(Lb.min.y, Math.min(mt.y, Lb.max.y)); minProp = Math.min(minProp, Math.hypot(mt.x - cx, mt.y - cy) - c.R); });
   const fmt = (v, good, u = "mm") => `<span class="${good ? "ok" : "bad"}">${v.toFixed(0)} ${u}</span>`;
   const yes = (t, good) => `<span class="${good ? "ok" : "bad"}">${t}</span>`;
-  const rows = [`<div>與槳盤水平最近距離：${fmt(minProp, minProp > 15)}</div>`];
+  const rows = [`<div>鏡組外框距槳盤（水平投影）：${fmt(minProp, minProp > 15)}；非完整碰撞檢核</div>`];
   if (place === "top") {
     if (c.topSens) {
       const gap = Math.min(...c.topSens.map(x => b.min.x - x)) - Math.tan(25 * Math.PI / 180) * (b.max.z - c.top);
@@ -541,6 +516,8 @@ function clearance() {
     rows.push(`<div>鏡組後緣距機頭：${fmt(Lb.min.x - c.nose.front, Lb.min.x >= c.nose.front)}</div>`);
     rows.push(`<div>${c.radar ? "前避障雷達（示意視錐）" : "前視感測範圍"}：${yes(inFront ? "支架／鏡組與視錐相交，可能遮擋" : "本模型未見相交", !inFront)}；需實機確認</div>`);
     rows.push(`<div>鏡組光軸：<span>機頂下方 ${(c.top - c.nose.axisZ).toFixed(0)} mm</span></div>`);
+    const verticalProp=Math.min(...c.motors.map(mt=>mt.z+(c.radar?16:14)))-Lb.max.z;
+    rows.push(`<div>鏡組上緣距最低槳盤平面：${fmt(verticalProp,verticalProp>0)}（靜態模型）</div>`);
     if (c.rtk) {
       const elev = Math.atan2(b.max.z - (c.top + c.rtk.h), b.min.x - c.rtk.x) * 180 / Math.PI;
       rows.push(`<div>RTK 天線前方遮蔽仰角（模型）：${fmt(elev, elev <= 15, "°")}</div>`);
@@ -551,10 +528,10 @@ function clearance() {
     const halfAng = Math.atan2(gb.y, gb.x0 - L.max.x) * 180 / Math.PI;
     rows.push(`<div>鏡組最低點離地：${fmt(L.min.z + E, L.min.z + E >= 25)}${E ? `（腳架加高 ${E} mm）` : "（未加高）"}</div>`);
     rows.push(`<div>支架最低點（鎖緊耳）離地：${fmt(b.min.z + E, b.min.z + E >= 20)}</div>`);
-    rows.push(`<div>前方視野：${overlapZ ? yes(`被雲台遮擋（正前方左右約 ±${halfAng.toFixed(0)}°）`, false) : yes("不受雲台遮擋", true)}</div>`);
+    rows.push(`<div>水平前視（靜態雲台）：${overlapZ ? yes(`與雲台外框重疊（左右約 ±${halfAng.toFixed(0)}°）`, false) : yes("與雲台外框無重疊", true)}；俯仰掃掠待確認</div>`);
     const t40 = Math.tan(40 * Math.PI / 180), t50 = Math.tan(50 * Math.PI / 180);
-    const inDown = corners(b).some(p => c.downSens.some(x => { const dz = c.belly - p.z; return dz > 0 && Math.abs(p.x - x) <= dz * t40 && Math.abs(p.y) <= dz * t50; }));
-    rows.push(`<div>下視感測範圍：${yes(inDown ? "鏡組在視野內（影響下視定位與降落保護）" : "未遮擋", !inDown)}</div>`);
+    const inDown = intersectsFrontView(c,true);
+    rows.push(`<div>下視感測${c.radar?'（假設視錐）':''}：${yes(inDown ? "支架／鏡組與視錐相交，可能影響定位" : "本模型未見相交", !inDown)}；需實機確認</div>`);
   }
   return `<div class="clear"><b>間距檢查（依本模型）</b>${rows.join("")}</div>`;
 }
@@ -566,13 +543,13 @@ function renderSpec() {
   const over = margin < 0, tight = margin < 15;
   const evoMass = CRAFTS.evo.noseMass;
   if (Number.isFinite(evoMass)) {
-    document.getElementById("noseCompareMass").textContent = `${evoMass.toFixed(1)}＋1.5 g（粗估）`;
-    const cell = document.getElementById("noseCompareTotal"), evoTotal = 1191 + LENS_G + evoMass + 1.5;
+    document.getElementById("noseCompareMass").textContent = `${evoMass.toFixed(1)}＋3.0 g（體積／配件估算）`;
+    const cell = document.getElementById("noseCompareTotal"), evoTotal = 1191 + LENS_G + window.MOUNT_V6.config.evo.nose.mount_g;
     cell.textContent = `約 ${evoTotal.toFixed(1)} g`; cell.classList.toggle("bad", evoTotal > 1270);
   }
   Object.entries(CRAFTS).forEach(([key, craft]) => {
     if (!Number.isFinite(craft.noseMass)) return;
-    const value = craft.mtow - craft.base - LENS_G - craft.noseMass - 1.5;
+    const value = craft.mtow - craft.base - LENS_G - window.MOUNT_V6.config[key].nose.mount_g;
     const cell = document.getElementById(key === "evo" ? "noseMarginEvo" : "noseMarginM3");
     cell.textContent = `${value >= 0 ? "尚餘" : "超出"} ${Math.abs(value).toFixed(1)} g（粗估）`; cell.classList.toggle("bad", value < 0);
   });
@@ -580,22 +557,31 @@ function renderSpec() {
     ${s.lead ? `<p class="lead">${s.lead}</p>` : ""}
     <dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
     ${s.parts ? `<div><b>零件與材料</b><ol class="parts">${s.parts.map(p => `<li>${p}</li>`).join("")}</ol></div>` : ""}
-    ${mountKey === "nose" ? `<div class="note warn">前置支架為配置示意，接合重疊未扣除的幾何體積用於重量粗估；既有列印用 STL 為舊機頂方案。夾持尺寸、列印模型與實際重量需另行確認。</div>` : ""}
+    ${s.v6 && (mountKey === 'adh' || s.place === 'belly') ? `<details><summary>黏貼與試裝方式</summary><ol class="parts"><li>先量接觸曲面並確認機殼／PETG 與膠帶相容性，空支架試裝，避開散熱口、雷達、下視感測與活動上蓋。</li><li>依所選膠帶資料表清潔、乾燥、壓貼。VHB 通常於室溫約 72 小時建立完整黏著；不能視為承載測試通過。Dual Lock 厚度須另改參數。</li><li>裝鏡組與獨立安全繩後，做地面承載、剝離及振動試驗，核對雲台全角度掃掠與整機秤重。</li></ol><a href="https://www.3m.com/3M/en_US/bonding-and-assembly-us/resources/full-story/?storyid=b3996cbd-9954-455f-8e72-88e452ca38c0" target="_blank" rel="noopener">3M 表面處理資料</a></details>` : ""}
+    ${s.v6 ? `<div class="note warn">STEP／STL 與畫面使用同一參數模型，已做實體與體積檢核；局部尺寸仍為假設，尚未完成實機試裝、強度、黏著及飛行驗證。整機展開尺寸不能代替接觸面量測。</div><div><button type="button" id="downloadMount">下載此支架試裝 STL</button>${s.legs ? ' <button type="button" id="downloadLeg">下載腳架試裝 STL</button>' : ""}<p><a href="mounts-v6-package.zip" download>下載 STEP／STL 完整試裝套件與黏貼說明</a></p></div>` : ""}
     ${clearance()}
     ${craftKey === "m3"
       ? `<div class="note good"><b>重量：</b>依既有機體／最大起飛重量設定，鏡組加支架後尚餘 ${margin.toFixed(1)} g。須整機秤重，並確認 RTK 天線與前避障雷達的實際遮蔽。</div>`
       : over ? `<div class="note warn"><b>重量：</b>整機粗估超過既有最大起飛重量設定 1,270 g 約 ${Math.abs(margin).toFixed(1)} g。須依實際支架、配件與鏡組重量確認裕度。</div>`
-      : `<div class="note ${tight ? "warn" : "good"}"><b>重量：</b>原廠最大起飛重量 1,270 g、機體 1,191 g，可加裝 79 g；鏡組 66.0 g。實際列印（填充 50%）通常比實心估算輕 10～15%，列印後務必整機秤重。</div>`}`;
+      : `<div class="note ${tight ? "warn" : "good"}"><b>重量：</b>依既有重量設定，可加裝 79 g；鏡組 66.0 g。列印重量受外壁、填充、材料影響，須以實際支架與配件整機秤重。</div>`}`;
 }
 
+document.getElementById("spec").addEventListener("click", event => {
+  const id = event.target.id; if (id !== "downloadMount" && id !== "downloadLeg") return;
+  const s = mountData(), key = id === "downloadLeg" ? s.legs.stl : s.stl[0];
+  const raw = window.MOUNT_V6.print_models[key]; if (!raw) return;
+  const bytes = Uint8Array.from(atob(raw), c => c.charCodeAt(0)), url = URL.createObjectURL(new Blob([bytes], {type:"model/stl"}));
+  const a = document.createElement("a"); a.href=url; a.download=key+"_待量測試裝.stl"; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
 // ---------------- 視角與控制 ----------------
+const viewFit=()=>Math.max(1,1.6/camera.aspect); let lastFit=1;
 function setView(k) {
   if (k === "close") {
     const t = new THREE.Vector3(); C().mountGroup.getWorldPosition(t);
     const below = (MOUNTS[mountKey].place === "belly");
     camera.position.set(t.x + 190, t.y + (below ? 40 : 110), t.z - 170); controls.target.copy(t).add(new THREE.Vector3(0, below ? -20 : 25, 0));
   } else { const [p, tg] = C().views[k]; camera.position.set(...p); controls.target.set(...tg); }
-  controls.update();
+  lastFit=viewFit();camera.position.sub(controls.target).multiplyScalar(lastFit).add(controls.target);controls.update();
 }
 document.querySelectorAll("[data-cam]").forEach(b => b.addEventListener("click", () => setView(b.dataset.cam)));
 function sync() {
@@ -609,7 +595,7 @@ function sync() {
 ["optProps", "optDisc", "optCamFov", "optUpFov", "optSensFov"].forEach(id => document.getElementById(id).addEventListener("change", sync));
 document.querySelectorAll("[data-craft]").forEach(b => b.addEventListener("click", () => { document.getElementById("tilt").value = 0; select(b.dataset.craft, null); }));
 document.querySelectorAll("[data-v]").forEach(b => b.addEventListener("click", () => { document.getElementById("tilt").value = 0; select(null, b.dataset.v, true); }));document.getElementById("tilt").addEventListener("input", applyTilt);
-function resize() { const w = box.clientWidth, h = box.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+function resize() { const w = box.clientWidth, h = box.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; const fit=viewFit();camera.position.sub(controls.target).multiplyScalar(fit/lastFit).add(controls.target);lastFit=fit;camera.updateProjectionMatrix(); }
 new ResizeObserver(resize).observe(box);
 const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clock = new THREE.Clock();
@@ -621,8 +607,9 @@ function tick() {
 }
 resize();
 // 首次直接開 #m3 時，EVO 比較表也有前置方案的重量估算。
-Object.values(CRAFTS).forEach(buildFrontNose);
-select(location.hash === "#m3" ? "m3" : "evo", "nose");
+Object.entries(CRAFTS).forEach(([key,c]) => { c.noseMass = window.MOUNT_V6.config[key].nose.bracket_g; });
+const initialMount=new URLSearchParams(location.search).get('mount');
+select(location.hash === "#m3" ? "m3" : "evo", Object.hasOwn(MOUNTS,initialMount) ? initialMount : "nose");
 tick();
 </script>
 </body>
