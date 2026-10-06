@@ -261,10 +261,10 @@ function propeller(R, mat) {
   return hub;
 }
 // 照片參考的漸縮機殼；局部斷面仍為待量測假設。
-function shell(sections, mat) {
+function shell(sections, mat,corner=24) {
   const vertices=[], indices=[], N=32;
   sections.forEach(([x,w,h,z]) => {
-    const r=Math.min(24,w/2,h/2);
+    const r=Math.min(corner,w/2,h/2);
     for(let i=0;i<N;i++) {
       const a=2*Math.PI*i/N, cy=Math.cos(a), sz=Math.sin(a);
       vertices.push(x,Math.sign(cy)*(w/2-r)+r*cy,z+Math.sign(sz)*(h/2-r)+r*sz);
@@ -321,7 +321,7 @@ function buildEVO() {
 // ---------------- 機型二：ALIGN 亞拓 M3 RTK ----------------
 function buildM3() {
   const g = new THREE.Group(); const B = { L: 250, W: 96, H: 66, cx: 0, cz: 152 }; const TOP = B.cz + B.H / 2;
-  g.add(shell([[-125,76,60,150],[-70,96,66,152],[70,96,66,152],[91,96,66,152],[125,82,46,148]],M.white));
+  g.add(shell([[-125,76,60,150],[-70,96,66,152],[70,96,66,152],[91,96,66,152],[125,82,46,148]],M.white,26));
   g.add(mesh(new RoundedBoxGeometry(70, B.W - 6, 34, 4, 14), M.whiteDk, B.cx + B.L / 2 - 30, 0, B.cz - 30));   // 機頭下緣
   g.add(mesh(new RoundedBoxGeometry(8, 34, 22, 2, 3), M.black, B.cx + B.L / 2 + 1, 0, B.cz + 2));            // 前避障雷達
   g.add(mesh(new RoundedBoxGeometry(96, B.W + 1, 26, 4, 10), M.whiteDk, B.cx - 70, 0, B.cz - 22));           // 電池艙
