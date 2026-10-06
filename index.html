@@ -92,6 +92,9 @@ footer { color: var(--muted); font-size: .82rem }
       <button id="tab-v2" data-v="v2" aria-pressed="false">V2 一體式</button>
       <button id="tab-v3" data-v="v3" aria-pressed="true">V3 加高版</button>
       <button id="tab-qr" data-v="qr" aria-pressed="false">鏡組快拆支架</button>
+      <button id="tab-nose" data-v="nose" data-evo-only aria-pressed="false">機頭夾持支架</button>
+      <button id="tab-b1" data-v="b1" data-evo-only aria-pressed="false">機腹 B1 標準型</button>
+      <button id="tab-b2" data-v="b2" data-evo-only aria-pressed="false">機腹 B2 下降型</button>
     </div>
   </div>
 
@@ -113,6 +116,7 @@ footer { color: var(--muted); font-size: .82rem }
         <label><input type="checkbox" id="optDisc"> 槳盤範圍</label>
         <label><input type="checkbox" id="optCamFov"> 雲台相機視野</label>
         <label><input type="checkbox" id="optUpFov" checked> <span id="upLabel">上視感測範圍</span></label>
+        <label id="sensBox"><input type="checkbox" id="optSensFov"> 前視／下視感測範圍</label>
         <label><input type="checkbox" id="optOrbit"> 自動環繞</label>
         <span class="tilt" id="tiltBox" hidden><label for="tilt">鏡組俯仰</label><input type="range" id="tilt" min="-30" max="30" step="1" value="0"><output id="tiltOut">0°</output></span>
       </div>
@@ -131,6 +135,17 @@ footer { color: var(--muted); font-size: .82rem }
         <tr><td>螺旋槳直徑</td><td class="num">約 239 mm</td><td class="num">221 mm</td></tr>
         <tr><td>機頂需避開</td><td>上視雙目感測器（機頂後段）</td><td>RTK 天線、兩支鞭狀天線（機頂中段）</td></tr>
         <tr><td>建議支架</td><td>V3 加高版（重量最緊，務必秤重）</td><td>三種皆可；V3 或鏡組快拆支架，重量不受限</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cmp">
+    <table>
+      <thead><tr><th>EVO II 掛載位置</th><th>支架＋配件重量（實心估算）</th><th>整機重量</th><th>需抬高機身</th><th>主要影響</th></tr></thead>
+      <tbody>
+        <tr><td>機頂 V3 加高版</td><td class="num">10.5＋1.5 g</td><td class="num">約 1,269 g</td><td class="num">不需要</td><td>避開上視感測器；重量裕度幾乎用完</td></tr>
+        <tr><td>機頭夾持支架</td><td class="num">10.8＋1.5 g</td><td class="num">約 1,269 g</td><td class="num">不需要</td><td>免黏膠、可拆；鏡組在前視感測器後上方，不擋前視</td></tr>
+        <tr><td>機腹 B1 標準型</td><td class="num">7.9＋11.2（腳架 4 支）＋1.5 g</td><td class="num bad">約 1,278 g（超重約 8 g）</td><td class="num">25 mm</td><td>前方視野被雲台遮擋；位於下視感測範圍內</td></tr>
+        <tr><td>機腹 B2 下降型</td><td class="num">11.0＋17.6（腳架 4 支）＋1.5 g</td><td class="num bad">約 1,287 g（超重約 17 g）</td><td class="num">55 mm</td><td>前方視野不受雲台遮擋；位於下視感測範圍內，重心降低</td></tr>
       </tbody>
     </table>
   </div>
@@ -161,6 +176,18 @@ const MOUNTS = {
     rows: [["鏡組離機頂（0°）", "18.7 mm"], ["轉軸高度", "11.0 mm"], ["俯仰調整", "−30°～+30°"], ["底座＋鏡頭環（實心）", "4.6 g＋6.6 g"]],
     parts: ["快拆底座 1 件", "鏡頭環 1 件", "M5×20 尼龍螺絲＋螺帽（轉軸）", "M3×12 尼龍螺絲＋螺帽（鏡頭環）", "3M VHB 或 Dual Lock", "安全繩"],
     stl: ["v4_base", "v4_ring"], lens: "lens_v4", hinge: 11.0 },
+  nose: { name: "機頭夾持支架", evo: true, place: "nose", g: 10.8 + 1.5,
+    lead: "U 形夾從上方扣住機頭，兩端夾鉤勾住機腹圓角，不需黏膠；上方套環夾住鏡組，鏡組位於前視感測器後上方，光軸與機身同向。",
+    rows: [["夾持斷面（寬×高）", "92 × 62 mm（需實測）"], ["夾片寬度／厚度", "8 mm／2.2 mm"], ["光軸距機頂", "21.8 mm"], ["支架重量（實心）", "10.8 g"]],
+    parts: ["夾持支架 1 件（一體成型）", "M3×12 尼龍螺絲＋螺帽", "0.5 mm 泡棉膠（貼夾片內側止滑）", "安全繩"], stl: ["nose_clip"], lens: "lens_nose" },
+  b1: { name: "機腹 B1 標準型", evo: true, place: "belly", g: 7.9 + 4 * 2.8 + 1.5, legs: { stl: "leg_e1", E: 25, g: 2.8 },
+    lead: "底板黏在機腹雲台後方，鏡組倒掛在下方。鏡組最低點原本離地只有約 6 mm，需加 25 mm 腳架延長件，鏡組離地約 31 mm。",
+    rows: [["鏡組最低點（未加高）", "約 5.6 mm"], ["腳架延長", "25 mm × 4 支"], ["鏡組最低點（加高後）", "約 30.6 mm"], ["支架＋腳架（實心）", "7.9 g＋11.2 g"]],
+    parts: ["機腹支架 1 件", "腳架延長件 25 mm × 4 支", "M3×12 尼龍螺絲＋螺帽", "3M VHB 或 Dual Lock", "束帶 4 條（固定延長件）", "安全繩"], stl: ["belly_b1"], lens: "lens_b1" },
+  b2: { name: "機腹 B2 下降型", evo: true, place: "belly", g: 11.0 + 4 * 4.4 + 1.5, legs: { stl: "leg_e2", E: 55, g: 4.4 },
+    lead: "A 字形支柱把鏡組降到雲台最低點以下 3 mm，鏡組往前看不會被雲台擋住。需加 55 mm 腳架延長件，鏡組離地約 32 mm。",
+    rows: [["支柱高度", "30.8 mm"], ["鏡組最低點（未加高）", "約 −23 mm（低於地面）"], ["腳架延長", "55 mm × 4 支"], ["鏡組最低點（加高後）", "約 31.8 mm"], ["支架＋腳架（實心）", "11.0 g＋17.6 g"]],
+    parts: ["機腹支架 1 件", "腳架延長件 55 mm × 4 支", "M3×12 尼龍螺絲＋螺帽", "3M VHB 或 Dual Lock", "束帶 4 條（固定延長件）", "安全繩"], stl: ["belly_b2"], lens: "lens_b2" },
 };
 const LENS_G = 66.0;
 
@@ -195,6 +222,7 @@ const M = {
   disc: new THREE.MeshBasicMaterial({ color: 0x2d6bd3, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false }),
   fovCam: new THREE.MeshBasicMaterial({ color: 0x1f7a4d, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false }),
   fovUp: new THREE.MeshBasicMaterial({ color: 0x8e44ad, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false }),
+  fovSens: new THREE.MeshBasicMaterial({ color: 0xd68910, transparent: true, opacity: 0.13, side: THREE.DoubleSide, depthWrite: false }),
 };
 function mesh(geo, mat, x = 0, y = 0, z = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; return m; }
 function rod(a, b, r, mat, seg = 20) {
@@ -228,38 +256,44 @@ function propeller(R, mat) {
 
 // ---------------- 機型一：Autel EVO II Pro V3 ----------------
 function buildEVO() {
-  const g = new THREE.Group(); const B = { L: 230, W: 92, H: 62, cx: -15, cz: 70 }; const TOP = B.cz + B.H / 2;
+  // 依官方總高 108 mm 校正：機頂 108、機腹 46、雲台最低點 16 mm（離地）
+  const g = new THREE.Group(); const B = { L: 230, W: 92, H: 62, cx: -15, cz: 77 }; const TOP = B.cz + B.H / 2, BELLY = B.cz - B.H / 2;
   g.add(mesh(new RoundedBoxGeometry(B.L, B.W, B.H, 6, 24), M.orange, B.cx, 0, B.cz));
-  g.add(mesh(new RoundedBoxGeometry(46, 80, 46, 5, 20), M.orange, B.cx + B.L / 2 - 8, 0, B.cz - 6));
   g.add(mesh(new RoundedBoxGeometry(96, B.W + 1, 30, 4, 10), M.orangeDk, B.cx - 64, 0, B.cz - 18));
-  const noseX = B.cx + B.L / 2 + 15;
-  [22, -22].forEach(y => eye(g, noseX - 1, y, B.cz + 4, "x"));
+  const front = B.cx + B.L / 2, frontSens = [16, -16].map(y => ({ x: front + 1, y, z: B.cz + 4 }));
+  frontSens.forEach(s => eye(g, s.x, s.y, s.z, "x"));
   [22, -22].forEach(y => eye(g, B.cx - B.L / 2 - 1, y, B.cz + 8, "x"));
   [18, -24].forEach(x => { eye(g, x, B.W / 2 + 1, B.cz + 6, "y"); eye(g, x, -B.W / 2 - 1, B.cz + 6, "y"); });
   const topSens = [-48, -88]; topSens.forEach(x => eye(g, x, 0, TOP + 1, "z"));
-  [10, -30].forEach(x => eye(g, x, 0, B.cz - B.H / 2 - 1, "z"));
-  const motors = [{ x: 125, y: 150, z: 100, f: 1 }, { x: 125, y: -150, z: 100, f: 1 }, { x: -128, y: 152, z: 80, f: 0 }, { x: -128, y: -152, z: 80, f: 0 }];
-  const R = 120, props = [], discs = [];
+  const downSens = [10, -30]; downSens.forEach(x => eye(g, x, 0, BELLY - 1, "z"));
+  const motors = [{ x: 125, y: 150, z: 104, f: 1 }, { x: 125, y: -150, z: 104, f: 1 }, { x: -128, y: 152, z: 86, f: 0 }, { x: -128, y: -152, z: 86, f: 0 }];
+  const R = 120, props = [], discs = [], legTips = [];
   motors.forEach(mt => {
-    const root = mt.f ? [B.cx + 70, Math.sign(mt.y) * 40, 88] : [B.cx - 80, Math.sign(mt.y) * 40, 62];
+    const root = mt.f ? [B.cx + 60, Math.sign(mt.y) * 40, 92] : [B.cx - 80, Math.sign(mt.y) * 40, 66];
     g.add(rod(root, [mt.x, mt.y, mt.z - 8], 7, M.carbon));
     g.add(zcyl(15, 22, M.black, mt.x, mt.y, mt.z)); g.add(zcyl(15.5, 4, M.red, mt.x, mt.y, mt.z + 6));
-    g.add(rod([mt.x, mt.y, mt.z - 10], [mt.x + (mt.f ? 4 : -4), mt.y, 0], 5, M.black));
+    const tip = { x: mt.x + (mt.f ? 4 : -4), y: mt.y }; legTips.push(tip);
+    g.add(rod([mt.x, mt.y, mt.z - 10], [tip.x, tip.y, 0], 5, M.black));
     const p = propeller(R, M.prop); p.position.set(mt.x, mt.y, mt.z + 14); p.userData.dir = (mt.f ? 1 : -1) * Math.sign(mt.y); g.add(p); props.push(p);
     const d = mesh(new THREE.RingGeometry(14, R, 64), M.disc, mt.x, mt.y, mt.z + 14); d.castShadow = false; g.add(d); discs.push(d);
   });
-  const gim = new THREE.Group(); gim.position.set(B.cx + B.L / 2 - 10, 0, B.cz - B.H / 2 - 4); g.add(gim);
-  gim.add(mesh(new THREE.BoxGeometry(18, 18, 10), M.grey)); gim.add(mesh(new RoundedBoxGeometry(14, 64, 12, 3, 4), M.grey, 4, 0, -12));
-  gim.add(mesh(new RoundedBoxGeometry(44, 48, 44, 4, 8), M.grey, 10, 0, -38));
-  const lc = zcyl(15, 10, M.glass, 36, 0, -38); lc.rotation.set(0, Math.PI / 2, 0); gim.add(lc);
-  const camFov = frustum(500, 82, 50, M.fovCam); camFov.position.set(gim.position.x + 41, 0, gim.position.z - 38); g.add(camFov);
+  // 雲台：相機 44 × 48 × 44 mm，最低點離地 16 mm，略突出機頭下緣
+  const gimbalBox = { x0: 62, x1: 106, y: 24, z0: 16, z1: 60 };
+  g.add(mesh(new THREE.BoxGeometry(18, 18, 10), M.grey, 78, 0, BELLY - 3));
+  g.add(mesh(new RoundedBoxGeometry(12, 60, 10, 3, 4), M.grey, 76, 0, BELLY - 10));
+  g.add(mesh(new RoundedBoxGeometry(44, 48, 44, 4, 8), M.grey, 84, 0, 38));
+  const lc = zcyl(15, 10, M.glass, 108, 0, 38); lc.rotation.set(0, Math.PI / 2, 0); g.add(lc);
+  const camFov = frustum(500, 82, 50, M.fovCam); camFov.position.set(112, 0, 38); g.add(camFov);
   const up = new THREE.Group(); topSens.forEach(x => { const f = frustum(220, 65, 50, M.fovUp); f.position.set(x, 0, TOP + 2); f.rotation.y = -Math.PI / 2; up.add(f); }); g.add(up);
-  return { group: g, props, discs, camFov, up, top: TOP, mountX: 35, motors, R, topSens,
+  const sens = new THREE.Group();
+  frontSens.forEach(s => { const f = frustum(220, 60, 80, M.fovSens); f.position.set(s.x + 2, s.y, s.z); sens.add(f); });
+  downSens.forEach(x => { const f = frustum(160, 100, 80, M.fovSens); f.position.set(x, 0, BELLY - 2); f.rotation.y = Math.PI / 2; sens.add(f); });
+  g.add(sens);
+  return { group: g, props, discs, camFov, up, sens, top: TOP, belly: BELLY, mountX: 35, noseX: 66, bellyX: 30, motors, R, topSens, frontSens, downSens, legTips, gimbalBox,
     title: "EVO II Pro V3 鏡組掛載模擬", upLabel: "上視感測範圍", base: 1191, mtow: 1270,
-    sub: "整機外形依 Autel 公開規格（展開 457 × 558 × 108 mm、軸距 397 mm）與實機照片建立，鏡組支架裝在機頂前段（QR 貼紙區），避開機頂後段的上視感測器。",
-    views: { iso: [[560, 330, -460], [0, 90, 0]], front: [[900, 120, 0], [0, 90, 0]], side: [[0, 110, -900], [0, 90, 0]], top: [[1, 950, 0], [0, 60, 0]], close: [[185, 210, -150], [35, 130, 0]] } };
+    sub: "整機外形依 Autel 公開規格（展開 457 × 558 × 108 mm、軸距 397 mm）與實機照片建立。可比較機頂、機頭夾持與機腹三種掛載位置。",
+    views: { iso: [[560, 330, -460], [0, 90, 0]], front: [[900, 120, 0], [0, 90, 0]], side: [[0, 110, -900], [0, 90, 0]], top: [[1, 950, 0], [0, 60, 0]] } };
 }
-
 // ---------------- 機型二：ALIGN 亞拓 M3 RTK ----------------
 function buildM3() {
   const g = new THREE.Group(); const B = { L: 250, W: 96, H: 66, cx: 0, cz: 152 }; const TOP = B.cz + B.H / 2;
@@ -310,18 +344,28 @@ function stl(name) {
   return cache[name];
 }
 const CRAFTS = { evo: buildEVO(), m3: buildM3() };
-Object.values(CRAFTS).forEach(c => { c.mountGroup = new THREE.Group(); c.mountGroup.position.set(c.mountX, 0, c.top); c.group.add(c.mountGroup); world.add(c.group); });
+Object.values(CRAFTS).forEach(c => {
+  c.mountGroup = new THREE.Group(); c.group.add(c.mountGroup);
+  c.legGroup = new THREE.Group(); c.group.add(c.legGroup); world.add(c.group);
+});
 let craftKey = "evo", mountKey = "v3", pivot = null;
 const C = () => CRAFTS[craftKey];
+const raiseE = () => (MOUNTS[mountKey].legs ? MOUNTS[mountKey].legs.E : 0);
 
 function buildMount() {
-  const c = C(), s = MOUNTS[mountKey];
-  c.mountGroup.clear(); pivot = null;
+  const c = C(), s = MOUNTS[mountKey], place = s.place || "top";
+  c.mountGroup.clear(); c.legGroup.clear(); pivot = null;
+  c.mountGroup.rotation.set(0, 0, 0);
+  if (place === "top") c.mountGroup.position.set(c.mountX, 0, c.top);
+  if (place === "nose") c.mountGroup.position.set(c.noseX, 0, c.top);
+  if (place === "belly") { c.mountGroup.position.set(c.bellyX, 0, c.belly); c.mountGroup.rotation.x = Math.PI; }   // 倒掛：底板黏機腹
+  const E = raiseE(); c.group.position.z = E;
+  if (s.legs) c.legTips.forEach(t => c.legGroup.add(mesh(stl(s.legs.stl), M.bracket, t.x, t.y, -E)));
   document.getElementById("tiltBox").hidden = !s.hinge;
   if (s.stl) {
     c.mountGroup.add(mesh(stl(s.stl[0]), M.bracket));
     pivot = new THREE.Group(); c.mountGroup.add(pivot);
-    const lens = mesh(stl(s.lens), M.lens);
+    const lens = mesh(stl(s.lens), M.lens); lens.userData.isLens = true;
     if (s.hinge) { pivot.position.z = s.hinge; const r = mesh(stl(s.stl[1]), M.bracket); r.position.z = -s.hinge; lens.position.z = -s.hinge; pivot.add(r); }
     pivot.add(lens);
   }
@@ -329,9 +373,12 @@ function buildMount() {
 }
 function select(craft, mount, keepView) {
   if (craft) craftKey = craft; if (mount) mountKey = mount;
-  Object.entries(CRAFTS).forEach(([k, c]) => { c.group.visible = k === craftKey; if (k !== craftKey) c.mountGroup.clear(); });
+  if (craftKey !== "evo" && MOUNTS[mountKey].evo) mountKey = "v3";
+  Object.entries(CRAFTS).forEach(([k, c]) => { c.group.visible = k === craftKey; if (k !== craftKey) { c.mountGroup.clear(); c.legGroup.clear(); c.group.position.z = 0; } });
   document.querySelectorAll("[data-craft]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.craft === craftKey)));
   document.querySelectorAll("[data-v]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === mountKey)));
+  document.querySelectorAll("[data-evo-only]").forEach(b => b.hidden = craftKey !== "evo");
+  document.getElementById("sensBox").hidden = !C().sens;
   document.getElementById("h1").textContent = C().title; document.getElementById("sub").textContent = C().sub + " 拖曳旋轉、滾輪縮放、右鍵平移。";
   document.getElementById("upLabel").textContent = C().upLabel;
   buildMount(); sync(); if (!keepView) setView("iso");
@@ -346,36 +393,57 @@ function applyTilt() {
 
 // ---------------- 規格與間距 ----------------
 const _b = new THREE.Box3();
-function mountBox() {
+function mountBox(lensOnly) {      // 以機身座標（未抬高）表示支架＋鏡組外框
   const c = C(); c.group.updateMatrixWorld(true); _b.makeEmpty();
-  c.mountGroup.traverse(o => { if (o.isMesh) { o.geometry.computeBoundingBox(); const b = o.geometry.boundingBox.clone(); b.applyMatrix4(o.matrixWorld); _b.union(b); } });
-  return _b.clone().applyMatrix4(new THREE.Matrix4().copy(world.matrixWorld).invert());
+  c.mountGroup.traverse(o => { if (o.isMesh && (!lensOnly || o.userData.isLens)) { o.geometry.computeBoundingBox(); const b = o.geometry.boundingBox.clone(); b.applyMatrix4(o.matrixWorld); _b.union(b); } });
+  return _b.clone().applyMatrix4(new THREE.Matrix4().copy(c.group.matrixWorld).invert());
 }
+function corners(b) { const r = []; for (const x of [b.min.x, b.max.x]) for (const y of [b.min.y, b.max.y]) for (const z of [b.min.z, b.max.z]) r.push({ x, y, z }); return r; }
 function clearance() {
-  const c = C(); if (!MOUNTS[mountKey].stl) return "";
-  const b = mountBox(); let minProp = Infinity;
-  c.motors.forEach(mt => { const cx = Math.max(b.min.x, Math.min(mt.x, b.max.x)), cy = Math.max(b.min.y, Math.min(mt.y, b.max.y)); minProp = Math.min(minProp, Math.hypot(mt.x - cx, mt.y - cy) - c.R); });
+  const c = C(), s = MOUNTS[mountKey]; if (!s.stl) return "";
+  const place = s.place || "top", b = mountBox(), Lb = mountBox(true), E = raiseE(); let minProp = Infinity;
+  // 以鏡組外框計算與槳盤的水平距離（夾片與支柱位於槳盤平面下方）
+  c.motors.forEach(mt => { const cx = Math.max(Lb.min.x, Math.min(mt.x, Lb.max.x)), cy = Math.max(Lb.min.y, Math.min(mt.y, Lb.max.y)); minProp = Math.min(minProp, Math.hypot(mt.x - cx, mt.y - cy) - c.R); });
   const fmt = (v, good, u = "mm") => `<span class="${good ? "ok" : "bad"}">${v.toFixed(0)} ${u}</span>`;
-  let extra = "";
-  if (c.topSens) {
-    const gap = Math.min(...c.topSens.map(x => b.min.x - x)) - Math.tan(25 * Math.PI / 180) * (b.max.z - c.top);
-    extra = `<div>距上視感測視野邊界：${fmt(gap, gap > 0)}</div>`;
-  } else {
-    const ant = { x: c.rtk.x, z: c.top + c.rtk.h };
-    const elev = Math.atan2(b.max.z - ant.z, b.min.x - ant.x) * 180 / Math.PI;
-    const az = 2 * Math.atan2((b.max.y - b.min.y) / 2, b.min.x - ant.x) * 180 / Math.PI;
-    extra = `<div>RTK 天線前方遮蔽仰角：${fmt(elev, elev <= 15, "°")}（方位寬約 ${az.toFixed(0)}°）</div>`;
+  const yes = (t, good) => `<span class="${good ? "ok" : "bad"}">${t}</span>`;
+  const rows = [`<div>與槳盤水平最近距離：${fmt(minProp, minProp > 15)}</div>`];
+  if (place === "top") {
+    if (c.topSens) {
+      const gap = Math.min(...c.topSens.map(x => b.min.x - x)) - Math.tan(25 * Math.PI / 180) * (b.max.z - c.top);
+      rows.push(`<div>距上視感測視野邊界：${fmt(gap, gap > 0)}</div>`);
+    } else {
+      const ant = { x: c.rtk.x, z: c.top + c.rtk.h };
+      const elev = Math.atan2(b.max.z - ant.z, b.min.x - ant.x) * 180 / Math.PI;
+      const az = 2 * Math.atan2((b.max.y - b.min.y) / 2, b.min.x - ant.x) * 180 / Math.PI;
+      rows.push(`<div>RTK 天線前方遮蔽仰角：${fmt(elev, elev <= 15, "°")}（方位寬約 ${az.toFixed(0)}°）</div>`);
+    }
+    rows.push(`<div>支架最高點距機頂：<span>${(b.max.z - c.top).toFixed(0)} mm</span></div>`);
   }
-  return `<div class="clear"><b>間距檢查（依本模型）</b>
-    <div>與槳盤水平最近距離：${fmt(minProp, minProp > 15)}</div>${extra}
-    <div>支架最高點距機頂：<span>${(b.max.z - c.top).toFixed(0)} mm</span></div></div>`;
+  if (place === "nose") {
+    const t30 = Math.tan(30 * Math.PI / 180), t40 = Math.tan(40 * Math.PI / 180);
+    const inFront = corners(b).some(p => c.frontSens.some(f => p.x > f.x && Math.abs(p.y - f.y) <= (p.x - f.x) * t30 && Math.abs(p.z - f.z) <= (p.x - f.x) * t40));
+    const behind = c.frontSens[0].x - b.max.x;
+    rows.push(`<div>前視感測範圍：${yes(inFront ? "鏡組在視野內" : "未遮擋", !inFront)}（鏡組前緣在感測器後方 ${behind.toFixed(0)} mm）</div>`);
+    rows.push(`<div>鏡組最高點距機頂：<span>${(b.max.z - c.top).toFixed(0)} mm</span></div>`);
+  }
+  if (place === "belly") {
+    const L = mountBox(true), gb = c.gimbalBox, overlapZ = L.min.z < gb.z1 && L.max.z > gb.z0;
+    const halfAng = Math.atan2(gb.y, gb.x0 - L.max.x) * 180 / Math.PI;
+    rows.push(`<div>鏡組最低點離地：${fmt(L.min.z + E, L.min.z + E >= 25)}${E ? `（腳架加高 ${E} mm）` : "（未加高）"}</div>`);
+    rows.push(`<div>支架最低點（鎖緊耳）離地：${fmt(b.min.z + E, b.min.z + E >= 20)}</div>`);
+    rows.push(`<div>前方視野：${overlapZ ? yes(`被雲台遮擋（正前方左右約 ±${halfAng.toFixed(0)}°）`, false) : yes("不受雲台遮擋", true)}</div>`);
+    const t40 = Math.tan(40 * Math.PI / 180), t50 = Math.tan(50 * Math.PI / 180);
+    const inDown = corners(b).some(p => c.downSens.some(x => { const dz = c.belly - p.z; return dz > 0 && Math.abs(p.x - x) <= dz * t40 && Math.abs(p.y) <= dz * t50; }));
+    rows.push(`<div>下視感測範圍：${yes(inDown ? "鏡組在視野內（影響下視定位與降落保護）" : "未遮擋", !inDown)}</div>`);
+  }
+  return `<div class="clear"><b>間距檢查（依本模型）</b>${rows.join("")}</div>`;
 }
 function renderSpec() {
   const c = C(), s = MOUNTS[mountKey];
   const total = c.base + (s.stl ? LENS_G + s.g : 0), margin = c.mtow - total;
-  const rows = s.stl ? [...s.rows, ["整機重量（實心估算）", `約 ${total.toLocaleString("en-US", { maximumFractionDigits: 1 })} g`], ["距最大起飛重量", `${margin >= 0 ? "" : "超出 "}${Math.abs(margin).toFixed(1)} g`]]
+  const rows = s.stl ? [...s.rows, ["整機重量（實心估算）", `約 ${total.toLocaleString("en-US", { maximumFractionDigits: 1 })} g`], ["距最大起飛重量", `${margin >= 0 ? "尚餘 " : "超出 "}${Math.abs(margin).toFixed(1)} g`]]
                      : [["起飛重量", `${c.base.toLocaleString("en-US")} g`], ["最大起飛重量", `${c.mtow.toLocaleString("en-US")} g`], ["可加裝重量", `${c.mtow - c.base} g`]];
-  const tight = margin < 15;
+  const over = margin < 0, tight = margin < 15;
   document.getElementById("spec").innerHTML = `<h3>${craftKey === "m3" ? "ALIGN 亞拓 M3 RTK" : "Autel EVO II Pro V3"}</h3><h2>${s.name}</h2>
     ${s.lead ? `<p class="lead">${s.lead}</p>` : ""}
     <dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
@@ -383,11 +451,19 @@ function renderSpec() {
     ${clearance()}
     ${craftKey === "m3"
       ? `<div class="note good"><b>重量：</b>M3 RTK 官方酬載 650 g，鏡組 66 g 加支架後仍剩約 570 g，重量不是限制。請注意支架不要遮到 RTK 天線與兩支鞭狀天線。</div>`
+      : over ? `<div class="note warn"><b>超重：</b>整機估算超過原廠最大起飛重量 1,270 g 約 ${Math.abs(margin).toFixed(0)} g。機腹方案在 EVO II 上須減輕腳架或鏡組重量，或改用酬載較大的機型（如 M3 RTK）。</div>`
       : `<div class="note ${tight ? "warn" : "good"}"><b>重量：</b>原廠最大起飛重量 1,270 g、機體 1,191 g，可加裝 79 g；鏡組 66.0 g。實際列印（填充 50%）通常比實心估算輕 10～15%，列印後務必整機秤重。</div>`}`;
 }
 
 // ---------------- 視角與控制 ----------------
-function setView(k) { const [p, t] = C().views[k]; camera.position.set(...p); controls.target.set(...t); controls.update(); }
+function setView(k) {
+  if (k === "close") {
+    const t = new THREE.Vector3(); C().mountGroup.getWorldPosition(t);
+    const below = (MOUNTS[mountKey].place === "belly");
+    camera.position.set(t.x + 190, t.y + (below ? 40 : 110), t.z - 170); controls.target.copy(t).add(new THREE.Vector3(0, below ? -20 : 25, 0));
+  } else { const [p, tg] = C().views[k]; camera.position.set(...p); controls.target.set(...tg); }
+  controls.update();
+}
 document.querySelectorAll("[data-cam]").forEach(b => b.addEventListener("click", () => setView(b.dataset.cam)));
 function sync() {
   const c = C();
@@ -395,11 +471,11 @@ function sync() {
   c.discs.forEach(d => d.visible = document.getElementById("optDisc").checked);
   c.camFov.visible = document.getElementById("optCamFov").checked;
   c.up.visible = document.getElementById("optUpFov").checked;
+  if (c.sens) c.sens.visible = document.getElementById("optSensFov").checked;
 }
-["optProps", "optDisc", "optCamFov", "optUpFov"].forEach(id => document.getElementById(id).addEventListener("change", sync));
+["optProps", "optDisc", "optCamFov", "optUpFov", "optSensFov"].forEach(id => document.getElementById(id).addEventListener("change", sync));
 document.querySelectorAll("[data-craft]").forEach(b => b.addEventListener("click", () => { document.getElementById("tilt").value = 0; select(b.dataset.craft, null); }));
-document.querySelectorAll("[data-v]").forEach(b => b.addEventListener("click", () => { document.getElementById("tilt").value = 0; select(null, b.dataset.v, true); }));
-document.getElementById("tilt").addEventListener("input", applyTilt);
+document.querySelectorAll("[data-v]").forEach(b => b.addEventListener("click", () => { document.getElementById("tilt").value = 0; select(null, b.dataset.v, true); }));document.getElementById("tilt").addEventListener("input", applyTilt);
 function resize() { const w = box.clientWidth, h = box.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
 new ResizeObserver(resize).observe(box);
 const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
