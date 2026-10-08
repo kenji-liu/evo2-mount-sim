@@ -87,6 +87,7 @@ footer { color: var(--muted); font-size: .82rem }
       <button id="craft-evo" data-craft="evo" aria-pressed="true">Autel EVO II Pro V3</button>
       <button id="craft-m3" data-craft="m3" aria-pressed="false">ALIGN 亞拓 M3 RTK</button>
     </div>
+    <label data-evo-only>重量參考 <select id="massProfile"><option value="cn">中國官網 1187／1999 g</option><option value="c2">原規格參考 1191／1270 g</option></select></label>
     <span class="lbl">支架</span>
     <div class="tabs mount" role="group" aria-label="選擇支架">
       <button id="tab-none" data-v="none" aria-pressed="false">未掛載</button>
@@ -130,9 +131,9 @@ footer { color: var(--muted); font-size: .82rem }
     <table>
       <thead><tr><th>項目</th><th>Autel EVO II Pro V3</th><th>ALIGN 亞拓 M3 RTK</th></tr></thead>
       <tbody>
-        <tr><td>起飛重量／最大起飛重量</td><td class="num">1,191 g／1,270 g</td><td class="num">1,400 g／2,050 g</td></tr>
-        <tr><td>可加裝重量</td><td class="num">79 g</td><td class="num">650 g（官方酬載）</td></tr>
-        <tr><td>鏡組 66 g＋前置支架後剩餘</td><td class="num" id="noseMarginEvo">依模型粗估</td><td class="num" id="noseMarginM3">依模型粗估</td></tr>
+        <tr><td>起飛重量／最大起飛重量</td><td class="num" id="evoWeightCell">1,187 g／1,999 g（中國官網參考）</td><td class="num">1,400 g／2,050 g</td></tr>
+        <tr><td>可加裝重量</td><td class="num" id="evoPayloadCell">812 g（相減參考）</td><td class="num">650 g（官方酬載）</td></tr>
+        <tr><td>鏡組 66.011 g＋前置夾持後剩餘</td><td class="num" id="noseMarginEvo">依模型粗估</td><td class="num" id="noseMarginM3">依模型粗估</td></tr>
         <tr><td>機體展開尺寸（使用者提供）</td><td class="num">260 × 355 × 108 mm</td><td class="num">468 × 548 × 216 mm</td></tr>
         <tr><td>軸距／含槳葉最大範圍</td><td class="num">397 mm／457 × 558 × 108 mm</td><td class="num">395 mm／468 × 548 × 216 mm（展開規格）</td></tr>
         <tr><td>螺旋槳直徑</td><td class="num">約 239 mm</td><td class="num">221 mm</td></tr>
@@ -144,19 +145,15 @@ footer { color: var(--muted); font-size: .82rem }
   <div class="cmp">
     <table>
       <thead><tr><th>EVO II 掛載位置</th><th>支架＋配件重量（實心估算）</th><th>整機重量</th><th>需抬高機身</th><th>主要影響</th></tr></thead>
-      <tbody>
-        <tr><td>機頂 V3 加高版</td><td class="num">10.5＋1.5 g</td><td class="num">約 1,269 g</td><td class="num">不需要</td><td>避開上視感測器；重量裕度幾乎用完</td></tr>
-        <tr id="noseCompare"><td>機頭前置夾持支架</td><td class="num" id="noseCompareMass">依前置幾何粗估</td><td class="num" id="noseCompareTotal">待計算</td><td class="num">不需要</td><td>免黏膠、可拆；鏡組位於機頭正前方，須確認前視感測遮蔽</td></tr>
-        <tr><td>機腹 B1 標準型</td><td class="num">7.9＋11.2（腳架 4 支）＋1.5 g</td><td class="num bad">約 1,278 g（超重約 8 g）</td><td class="num">25 mm</td><td>前方視野被雲台遮擋；位於下視感測範圍內</td></tr>
-        <tr><td>機腹 B2 下降型</td><td class="num">11.0＋17.6（腳架 4 支）＋1.5 g</td><td class="num bad">約 1,287 g（超重約 17 g）</td><td class="num">55 mm</td><td>前方視野不受雲台遮擋；位於下視感測範圍內，重心降低</td></tr>
-      </tbody>
+      <tbody id="evoMountCompare"></tbody>
     </table>
   </div>
-  <footer>研邦科技有限公司｜鏡組 V1：前段 Ø31、後段 Ø36、全長 35 mm、66.0 g｜規格來源：Autel Robotics 官網、亞拓科技網路購物（M3 RTK RM43001AW）</footer>
+  <footer>研邦科技有限公司｜鏡組 V1：前段 Ø31、後段 Ø36、全長 35 mm、66.011 g；V7 為 EVO 兩款加厚放寬試裝版｜規格來源：Autel Robotics 官網、亞拓科技網路購物（M3 RTK RM43001AW）</footer>
 </div>
 
 <script src="models.js"></script>
 <script src="mounts-v6.js"></script>
+<script src="mounts-v7.js"></script>
 <script type="importmap">
 { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
@@ -196,7 +193,7 @@ const MOUNTS = {
     rows: [["支柱高度", "30.8 mm"], ["鏡組最低點（未加高）", "約 −23 mm（低於地面）"], ["腳架延長", "55 mm × 4 支"], ["鏡組最低點（加高後）", "約 31.8 mm"], ["支架＋腳架（實心）", "11.0 g＋17.6 g"]],
     parts: ["機腹支架 1 件", "腳架延長件 55 mm × 4 支", "M3×12 尼龍螺絲＋螺帽", "3M VHB 或 Dual Lock", "束帶 4 條（固定延長件）", "安全繩"], stl: ["belly_b2"], lens: "lens_b2" },
 };
-const LENS_G = 66.0;
+const LENS_G = 66.011;
 
 // ---------------- 場景 ----------------
 const box = document.getElementById("viewer");
@@ -314,7 +311,7 @@ function buildEVO() {
   g.add(sens);
   return { group: g, props, discs, camFov, up, sens, top: TOP, belly: BELLY, mountX: 35, noseX: 66, bellyX: 30, motors, R, topSens, frontSens, downSens, legTips, gimbalBox,
     nose: { width: B.W, height: B.H, radius: 24, front, clampX: 66, axisZ: B.cz + 8 },
-    title: "EVO II Pro V3 鏡組掛載模擬", upLabel: "上視感測範圍", base: 1191, mtow: 1270,
+    title: "EVO II Pro V3 鏡組掛載模擬", upLabel: "上視感測範圍", base: 1187, mtow: 1999,
     sub: "整機外形依 Autel 公開規格（展開 457 × 558 × 108 mm、軸距 397 mm）與實機照片建立。可比較機頂、機頭正前方與機腹掛載位置。",
     views: { iso: [[560, 330, -460], [0, 90, 0]], front: [[900, 120, 0], [0, 90, 0]], side: [[0, 110, -900], [0, 90, 0]], top: [[1, 950, 0], [0, 60, 0]] } };
 }
@@ -371,7 +368,7 @@ function buildM3() {
 // ---------------- 支架 ----------------
 const loader = new STLLoader(); const cache = {};
 function stl(name) {
-  if (!cache[name]) { const raw = window.MOUNT_V6.models[name] || window.MODELS[name]; if (!raw) throw new Error(`缺少模型：${name}`); const bin = Uint8Array.from(atob(raw), c => c.charCodeAt(0)); const g = loader.parse(bin.buffer); g.computeVertexNormals(); cache[name] = g; }
+  if (!cache[name]) { const raw = window.MOUNT_V7.models[name] || window.MOUNT_V6.models[name] || window.MODELS[name]; if (!raw) throw new Error(`缺少模型：${name}`); const bin = Uint8Array.from(atob(raw), c => c.charCodeAt(0)); const g = loader.parse(bin.buffer); g.computeVertexNormals(); cache[name] = g; }
   return cache[name];
 }
 const CRAFTS = { evo: buildEVO(), m3: buildM3() };
@@ -385,14 +382,33 @@ const raiseE = () => (mountData().legs ? mountData().legs.E : 0);
 
 // STEP、列印 STL 與網頁 STL 均由同一份 params.json 產生。
 function mountData() {
-  const s = MOUNTS[mountKey], c = C(), cfg = window.MOUNT_V6.config[craftKey]?.[mountKey];
+  const s = MOUNTS[mountKey], c = C();
+  const v7 = craftKey === "evo" && window.MOUNT_V7.config[mountKey];
+  if (v7) {
+    const p = window.MOUNT_V7.params, a = window.MOUNT_V7.report.adhesion;
+    const rows = [["版本", "V7 加厚放寬試裝版"], ["套環內徑／壁厚", `${p.ring_id}／${p.ring_wall} mm`], ["鏡筒配合", "Ø31：直徑餘量 1.2 mm（每側 0.6）"], ["肩圈根部避讓", "Ø37.2（對 Ø36 肩圈）；只夾鏡筒"], ["可替換軟墊", "每側 0.4 mm（設計起始值）"], ["M3 套環孔／開縫", "Ø3.6／2.0 mm"], ["支架 PETG 實心估重", `${v7.bracket_g.toFixed(2)} g`], ["配件與膠帶估重", `${v7.hardware_g.toFixed(1)} g（須實秤）`]];
+    let lead, parts, result;
+    if (mountKey === "adh") {
+      rows.unshift(["兩黏貼腳座", "各 38 × 24 × 3.2 mm；中心距 46"], ["兩腳貼面投影", `${a.front_projected_mm2.toFixed(0)} mm²（約舊版 1.95 倍）`], ["連桿厚度", "4.0 mm＋腳座連接補強"], ["鏡組後緣距機頭", "4 mm（近似模型設定）"]);
+      lead = "加厚雙腳座黏於機頭上蓋前段，鏡組在機頭正前方；套環放寬並配置軟墊，以 M3 螺絲逐步鎖緊。貼面已擴大，實際接觸曲率仍需試配。";
+      parts = ["V7 前置黏貼支架 1 件", "0.4 mm 可替換鏡筒軟墊（避開肩圈、螺紋、光學面）", "M3×16 起始試配螺栓、螺帽及墊片，長度依實裝確認", "依機殼材質選型的膠帶；獨立安全繩"];
+      result = {...s,v6:v7,stl:[v7.stl],lens:v7.lens};
+    } else {
+      rows.unshift(["黏貼主面", "42 × 44 mm；最薄處 3.2 mm"], ["貼面投影", `${a.qr_projected_mm2.toFixed(0)} mm²（約舊版 2.59 倍）`], ["底面曲率", "R150 設計假設，待量測"], ["爪厚／爪槽", "4.0／4.6 mm（每側間隙 0.3）"], ["轉軸 M5 孔／高度", "Ø5.5／15.0 mm"], ["套環光軸高度（0°）", `${v7.lens_axis_z.toFixed(1)} mm（相對底面中心）`], ["俯仰檢查", "±30° 支架零件每 5° 靜態檢核"]);
+      lead = "機頂黏貼底座加大、三爪與二爪加厚，配成專用介面；以 M5 螺栓連接並調整俯仰。拆下鏡組須取出軸螺栓，尺寸不與舊版爪片混用。";
+      parts = ["V7 快拆底座＋鏡頭環，各 1 件", "0.4 mm 可替換鏡筒軟墊", "M5×30 起始試配軸螺栓、M3×16 套環螺栓，各配螺帽及墊片；長度依實裝確認", "依殼材選型的膠帶；獨立安全繩"];
+      result = {...s,stl:v7.stls,lens:v7.lens,hinge:v7.hinge};
+    }
+    return {...result,v7,g:v7.mount_g,rows,lead,parts};
+  }
+  const cfg = window.MOUNT_V6.config[craftKey]?.[mountKey];
   if (!cfg) return s;
   const rows = [["版本／狀態", "V6 待量測試裝版"], ["支架（PETG 實心體積估算）", `${cfg.bracket_g.toFixed(1)} g`], ["配件（估算）", `${cfg.hardware_g.toFixed(1)} g`]];
   let lead = s.lead, parts = [...s.parts];
   if (s.place === "nose") {
     rows.unshift(["夾持處模型寬×高", `${c.nose.width} × ${c.nose.height} mm（非實測）`], ["鏡組後緣距機頭", `${cfg.front_gap} mm（設定）`], ["光軸位置", `機頂下方 ${(c.top-cfg.lens_axis_z).toFixed(1)} mm`]);
     if(cfg.lens_offset_y) { rows.push(["鏡組左右偏移",`向左 ${cfg.lens_offset_y} mm（設計設定）`]);lead += " ALIGN 鏡組偏置機頭前左方，以避開中央雷達的假設視錐；增加側向力矩，需實測平衡與槳葉間隙。"; }
-    if (mountKey === "adh") rows.push(["兩脚座名義貼合面積", `${cfg.pad_area_mm2} mm²（平面投影，非有效黏著面積）`]);
+    if (mountKey === "adh") rows.push(["兩腳座名義貼合面積", `${cfg.pad_area_mm2} mm²（平面投影，非有效黏著面積）`]);
   } else {
     rows.unshift(["支柱高度", `${cfg.stem_height.toFixed(1)} mm`], ["腳架延長", cfg.extension ? `${cfg.extension} mm × 4 支（需實測腳管）` : "本模型不需加高"], ["鏡組最低點離地", `${cfg.lens_ground.toFixed(1)} mm（含加高）`], ["支架最低點離地", `${cfg.bracket_ground.toFixed(1)} mm（含加高）`]);
     if (mountKey === "b2") rows.push(["套環最高點距雲台最低點", `${cfg.gimbal_gap.toFixed(1)} mm（靜態模型）`]);
@@ -517,7 +533,7 @@ function clearance() {
     rows.push(`<div>${c.radar ? "前避障雷達（示意視錐）" : "前視感測範圍"}：${yes(inFront ? "支架／鏡組與視錐相交，可能遮擋" : "本模型未見相交", !inFront)}；需實機確認</div>`);
     rows.push(`<div>鏡組光軸：<span>機頂下方 ${(c.top - c.nose.axisZ).toFixed(0)} mm</span></div>`);
     const verticalProp=Math.min(...c.motors.map(mt=>mt.z+(c.radar?16:14)))-Lb.max.z;
-    rows.push(`<div>鏡組上緣距最低槳盤平面：${fmt(verticalProp,verticalProp>0)}（靜態模型）</div>`);
+    rows.push(`<div>鏡組上緣與最低槳盤平面的高度差：${fmt(verticalProp,verticalProp>0)}（靜態模型）</div>`);
     if (c.rtk) {
       const elev = Math.atan2(b.max.z - (c.top + c.rtk.h), b.min.x - c.rtk.x) * 180 / Math.PI;
       rows.push(`<div>RTK 天線前方遮蔽仰角（模型）：${fmt(elev, elev <= 15, "°")}</div>`);
@@ -541,12 +557,6 @@ function renderSpec() {
   const rows = s.stl ? [...s.rows, ["整機重量（實心估算）", `約 ${total.toLocaleString("en-US", { maximumFractionDigits: 1 })} g`], ["距最大起飛重量", `${margin >= 0 ? "尚餘 " : "超出 "}${Math.abs(margin).toFixed(1)} g`]]
                      : [["起飛重量", `${c.base.toLocaleString("en-US")} g`], ["最大起飛重量", `${c.mtow.toLocaleString("en-US")} g`], ["可加裝重量", `${c.mtow - c.base} g`]];
   const over = margin < 0, tight = margin < 15;
-  const evoMass = CRAFTS.evo.noseMass;
-  if (Number.isFinite(evoMass)) {
-    document.getElementById("noseCompareMass").textContent = `${evoMass.toFixed(1)}＋3.0 g（體積／配件估算）`;
-    const cell = document.getElementById("noseCompareTotal"), evoTotal = 1191 + LENS_G + window.MOUNT_V6.config.evo.nose.mount_g;
-    cell.textContent = `約 ${evoTotal.toFixed(1)} g`; cell.classList.toggle("bad", evoTotal > 1270);
-  }
   Object.entries(CRAFTS).forEach(([key, craft]) => {
     if (!Number.isFinite(craft.noseMass)) return;
     const value = craft.mtow - craft.base - LENS_G - window.MOUNT_V6.config[key].nose.mount_g;
@@ -557,21 +567,27 @@ function renderSpec() {
     ${s.lead ? `<p class="lead">${s.lead}</p>` : ""}
     <dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
     ${s.parts ? `<div><b>零件與材料</b><ol class="parts">${s.parts.map(p => `<li>${p}</li>`).join("")}</ol></div>` : ""}
-    ${s.v6 && (mountKey === 'adh' || s.place === 'belly') ? `<details><summary>黏貼與試裝方式</summary><ol class="parts"><li>先量接觸曲面並確認機殼／PETG 與膠帶相容性，空支架試裝，避開散熱口、雷達、下視感測與活動上蓋。</li><li>依所選膠帶資料表清潔、乾燥、壓貼。VHB 通常於室溫約 72 小時建立完整黏著；不能視為承載測試通過。Dual Lock 厚度須另改參數。</li><li>裝鏡組與獨立安全繩後，做地面承載、剝離及振動試驗，核對雲台全角度掃掠與整機秤重。</li></ol><a href="https://www.3m.com/3M/en_US/bonding-and-assembly-us/resources/full-story/?storyid=b3996cbd-9954-455f-8e72-88e452ca38c0" target="_blank" rel="noopener">3M 表面處理資料</a></details>` : ""}
-    ${s.v6 ? `<div class="note warn">STEP／STL 與畫面使用同一參數模型，已做實體與體積檢核；局部尺寸仍為假設，尚未完成實機試裝、強度、黏著及飛行驗證。整機展開尺寸不能代替接觸面量測。</div><div><button type="button" id="downloadMount">下載此支架試裝 STL</button>${s.legs ? ' <button type="button" id="downloadLeg">下載腳架試裝 STL</button>' : ""}<p><a href="mounts-v6-package.zip" download>下載 STEP／STL 完整試裝套件與黏貼說明</a></p></div>` : ""}
+    ${(s.v6 || s.v7) && (mountKey === 'adh' || mountKey === 'qr' || s.place === 'belly') ? `<details><summary>黏貼與試裝方式</summary><ol class="parts"><li>先量接觸曲面並確認機殼／PETG 與膠帶相容性，空支架試裝，避開散熱口、雷達、下視感測與活動上蓋。</li><li>依所選膠帶資料表清潔、乾燥、壓貼。VHB 通常於室溫約 72 小時建立完整黏著；不能視為承載測試通過。Dual Lock 厚度須另改參數。</li><li>裝鏡組與獨立安全繩後，做地面承載、剝離及振動試驗，核對雲台全角度掃掠與整機秤重。</li></ol><a href="https://www.3m.com/3M/en_US/bonding-and-assembly-us/resources/full-story/?storyid=b3996cbd-9954-455f-8e72-88e452ca38c0" target="_blank" rel="noopener">3M 表面處理資料</a></details>` : ""}
+    ${s.v7 ? `<div class="note warn">貼面數值是幾何投影面積，不能直接當作黏著承載。前置腳座為平面；快拆 R150 為假設。先印試片檢查局部曲率、孔槽與軟墊配合，再確認雲台掃掠及感測視野。</div><div><b>V7 模型與尺寸下載</b><p>${s.stl.map(k => `<a href="v7-${k.replace('v7_','')}.skp" download>下載 ${k.includes('base') ? '底座' : k.includes('ring') ? '套環' : '前置支架'} SKP</a>`).join(' · ')}${mountKey === 'qr' ? ' · <a href="v7-qr_assembly.skp" download>組立 SKP</a>' : ''}</p><p>${s.stl.map(k => `<button type="button" data-download-stl="${k}">${k.includes('base') ? '底座' : k.includes('ring') ? '套環' : '前置支架'} STL</button>`).join(' ')}</p><p><a href="mounts-v7-package.zip" download>完整 SKP／STEP／STL＋配合試片</a> · <a href="v7-dimensions.pdf" target="_blank" rel="noopener">附尺寸圖與試裝說明</a></p></div>` : ""}
+    ${s.v6 && !s.v7 ? `<div class="note warn">STEP／STL 與畫面使用同一參數模型，已做實體與體積檢核；局部尺寸仍為假設，尚未完成實機試裝、強度、黏著及飛行驗證。整機展開尺寸不能代替接觸面量測。</div><div><button type="button" id="downloadMount">下載此支架試裝 STL</button>${s.legs ? ' <button type="button" id="downloadLeg">下載腳架試裝 STL</button>' : ""}<p><a href="mounts-v6-package.zip" download>下載 STEP／STL 完整試裝套件與黏貼說明</a></p></div>` : ""}
     ${clearance()}
     ${craftKey === "m3"
-      ? `<div class="note good"><b>重量：</b>依既有機體／最大起飛重量設定，鏡組加支架後尚餘 ${margin.toFixed(1)} g。須整機秤重，並確認 RTK 天線與前避障雷達的實際遮蔽。</div>`
-      : over ? `<div class="note warn"><b>重量：</b>整機粗估超過既有最大起飛重量設定 1,270 g 約 ${Math.abs(margin).toFixed(1)} g。須依實際支架、配件與鏡組重量確認裕度。</div>`
-      : `<div class="note ${tight ? "warn" : "good"}"><b>重量：</b>依既有重量設定，可加裝 79 g；鏡組 66.0 g。列印重量受外壁、填充、材料影響，須以實際支架與配件整機秤重。</div>`}`;
+      ? `<div class="note ${over ? 'warn' : 'good'}"><b>重量：</b>沿用既有機體／最大起飛重量參考，須整機秤重確認。</div>`
+      : `<div class="note ${over || tight ? 'warn' : 'good'}"><b>重量規格：</b>${document.getElementById('massProfile').value === 'cn' ? '中國官網參考：1187／1999 g' : '原規格參考：1191／1270 g'}。實際限重依機身銘牌及適用手冊；加厚增加重量，請整機實秤。</div><p><a href="https://www.autelrobotics.cn/productdetail/evo-ii-pro-v3/" target="_blank" rel="noopener">Autel 中國官方規格</a> · <a href="https://shop.autelrobotics.com/pages/evo-ii-pro-v3-specifications-aircraft" target="_blank" rel="noopener">原重量參考頁</a></p>`}`;
+  document.getElementById('evoWeightCell').textContent = `${CRAFTS.evo.base.toLocaleString('en-US')} g／${CRAFTS.evo.mtow.toLocaleString('en-US')} g（所選參考）`;
+  document.getElementById('evoPayloadCell').textContent = `${CRAFTS.evo.mtow-CRAFTS.evo.base} g（相減參考，非核准酬載）`;
+  const compare = [['V3 加高版',MOUNTS.v3.g,0,'機頂'],['V7 前置黏貼',window.MOUNT_V7.config.adh.mount_g,0,'機頭前置；貼面待試配'],['V7 鏡組快拆',window.MOUNT_V7.config.qr.mount_g,0,'機頂；專用加厚爪片'],['B1 標準型',MOUNTS.b1.g,25,'機腹；視野與離地待實核'],['B2 下降型',MOUNTS.b2.g,55,'機腹；視野與離地待實核']];
+  document.getElementById('evoMountCompare').innerHTML = compare.map(([name,g,e,note])=>{const t=CRAFTS.evo.base+LENS_G+g;return `<tr><td>${name}</td><td class="num">${g.toFixed(1)} g</td><td class="num ${t>CRAFTS.evo.mtow?'bad':''}">${t.toFixed(1)} g</td><td>${e?e+' mm':'不需要（模型）'}</td><td>${note}</td></tr>`;}).join('');
+
 }
 
 document.getElementById("spec").addEventListener("click", event => {
-  const id = event.target.id; if (id !== "downloadMount" && id !== "downloadLeg") return;
-  const s = mountData(), key = id === "downloadLeg" ? s.legs.stl : s.stl[0];
-  const raw = window.MOUNT_V6.print_models[key]; if (!raw) return;
+  const id = event.target.id, target = event.target.dataset.downloadStl;
+  if (!target && id !== "downloadMount" && id !== "downloadLeg") return;
+  const s = mountData(), key = target || (id === "downloadLeg" ? s.legs.stl : s.stl[0]);
+  const raw = window.MOUNT_V7.print_models[key] || window.MOUNT_V6.print_models[key]; if (!raw) return;
   const bytes = Uint8Array.from(atob(raw), c => c.charCodeAt(0)), url = URL.createObjectURL(new Blob([bytes], {type:"model/stl"}));
-  const a = document.createElement("a"); a.href=url; a.download=key+"_待量測試裝.stl"; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+  const a = document.createElement("a"); a.href=url; a.download=key+"_試裝_mm.stl"; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
 // ---------------- 視角與控制 ----------------
 const viewFit=()=>Math.max(1,1.6/camera.aspect); let lastFit=1;
@@ -608,6 +624,9 @@ function tick() {
 resize();
 // 首次直接開 #m3 時，EVO 比較表也有前置方案的重量估算。
 Object.entries(CRAFTS).forEach(([key,c]) => { c.noseMass = window.MOUNT_V6.config[key].nose.bracket_g; });
+document.getElementById('massProfile').addEventListener('change', event => {
+  const c = CRAFTS.evo, c2 = event.target.value === 'c2'; c.base = c2 ? 1191 : 1187; c.mtow = c2 ? 1270 : 1999; renderSpec();
+});
 const initialMount=new URLSearchParams(location.search).get('mount');
 select(location.hash === "#m3" ? "m3" : "evo", Object.hasOwn(MOUNTS,initialMount) ? initialMount : "nose");
 tick();
